@@ -6,8 +6,9 @@ RUN mvn dependency:go-offline
 COPY backend/src ./src
 RUN mvn clean package -DskipTests
 
-# 第二阶段：运行（使用 eclipse-temurin 替代 openjdk）
+# 第二阶段：运行
 FROM eclipse-temurin:17-jre
+WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
