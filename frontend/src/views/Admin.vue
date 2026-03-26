@@ -245,7 +245,7 @@ export default {
         condition: ''
       },
       currentUserId: null,
-      apiBaseUrl: 'http://localhost:10011/api'
+      apiBaseUrl: 'https://books-drifting-production.up.railway.app/api'
     }
   },
   mounted() {

@@ -186,7 +186,7 @@ export default {
       sortOrder: 'desc',
       newNote: '',
       chart: null,
-      apiBaseUrl: 'http://localhost:10011/api',
+      apiBaseUrl: 'https://books-drifting-production.up.railway.app/api',
       currentUser: null,
       handleResize: null,
       currentUserAvatar:''

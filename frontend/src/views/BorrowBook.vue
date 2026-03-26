@@ -835,7 +835,7 @@ const submitManual = async () => {
 
 // 用户验证
 const verifyStudent = (studentId, defaultName = '') => {
-  axios.get('http://localhost:10011/api/users')
+  axios.get('https://books-drifting-production.up.railway.app/api/users')
     .then(response => {
       const users = response.data
       const user = users.find(u => u.studentId === studentId)
@@ -1078,7 +1078,7 @@ const verifyBook = async (bookId) => {
     console.log('验证书籍，bookId:', bookId)
     
     // 尝试通过查询参数搜索书籍
-    const response = await axios.get('http://localhost:10011/api/books/available')
+    const response = await axios.get('https://books-drifting-production.up.railway.app/api/books/available')
     const books = response.data
     
     console.log('所有可借阅书籍:', books)
@@ -1190,7 +1190,7 @@ const confirmBorrow = async () => {
     
     submitting.value = true
     
-    const response = await axios.post('http://localhost:10011/api/borrow/borrow', {
+    const response = await axios.post('https://books-drifting-production.up.railway.app/api/borrow/borrow', {
       userId: studentInfo.value.id,
       bookId: selectedBook.value.id,
       period: borrowForm.period,

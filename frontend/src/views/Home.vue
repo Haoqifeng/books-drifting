@@ -132,7 +132,7 @@ export default {
       loading: false,
       showScrollTop: false,
       showMobileMenu: false,
-      apiBaseUrl: 'http://localhost:10011/api'
+      apiBaseUrl: 'https://books-drifting-production.up.railway.app/api'
     }
   },
   computed: {

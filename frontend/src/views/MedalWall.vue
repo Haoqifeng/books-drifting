@@ -109,7 +109,7 @@ export default {
       allMedals: [],
       loading: true,
       error: null,
-      apiBaseUrl: 'http://localhost:10011/api'  // 使用代理路径
+      apiBaseUrl: 'https://books-drifting-production.up.railway.app/api'  // 使用代理路径
     }
   },
   computed: {

@@ -308,7 +308,7 @@ export default {
         email: ''
       },
       borrowedBooks: [],
-      apiBaseUrl: 'http://localhost:10011/api',
+      apiBaseUrl: 'https://books-drifting-production.up.railway.app/api',
       themes: [
         {
           value: 'default',
