@@ -14,7 +14,7 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 
 public class BookController {
-    @GetMapping("/test")
+    @GetMapping("/ping")
     public Map<String, String> test() {
     Map<String, String> result = new HashMap<>();
     result.put("status", "ok");
