@@ -12,7 +12,15 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/books")
 @CrossOrigin(origins = "*")
+
 public class BookController {
+    @GetMapping("/test")
+    public Map<String, String> test() {
+    Map<String, String> result = new HashMap<>();
+    result.put("status", "ok");
+    result.put("message", "Backend is running!");
+    return result;
+   }
 
     @Autowired
     private BookService bookService;
