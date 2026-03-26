@@ -1,0 +1,15 @@
+
+
+cat >railway.json
+<<'EOF'
+
+{
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "cd backend && ./mvnw clean package -DskipTests"
+  },
+  "deploy": {
+    "startCommand": "cd backend && java -jar target/*.jar",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}
