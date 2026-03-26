@@ -52,6 +52,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   data() {
     return {
@@ -60,7 +62,8 @@ export default {
         password: '',
         remember: false
       },
-      loading: false
+      loading: false,
+      apiBaseUrl: 'https://books-drifting-production.up.railway.app/api'
     }
   },
   methods: {
@@ -83,7 +86,7 @@ export default {
           return;
         }
 
-        const response = await this.$request.post('${this.apiBaseUrl}/users/login', {
+        const response = await axios.post(`${this.apiBaseUrl}/users/login`, {
           username: this.form.username,
           password: this.form.password
         });
