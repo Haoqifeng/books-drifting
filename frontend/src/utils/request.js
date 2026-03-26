@@ -1,8 +1,10 @@
 import axios from 'axios'
 
+// 后端 API 地址
+const API_BASE_URL = 'https://books-drifting-production.up.railway.app/api'
 // 创建 axios 实例
 const request = axios.create({
-  baseURL: 'https://books-drifting-production.up.railway.app/api',  // 基础路径
+  baseURL: API_BASE_URL,  // 基础路径
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
