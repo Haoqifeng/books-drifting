@@ -1,10 +1,11 @@
 <template>
   <div class="medal-wall">
-    <div class="header-section">
-      <h2>✨ 荣耀勋章墙 ✨</h2>
-      <router-link to="/user" class="back-link">
+    <router-link to="/user" class="back-link">
         <span class="arrow-icon">←</span> 返回个人中心
       </router-link>
+    <div class="header-section">
+      <h2>✨ 荣耀勋章墙 ✨</h2>
+      
     </div>
     
     <!-- 加载状态 -->
@@ -329,94 +330,92 @@ export default {
 </script>
 
 <style scoped>
+/* ==================== 清新风格样式 ==================== */
 .medal-wall {
+  background: #faf8f4;
+  min-height: 100vh;
+  padding: 32px 40px;
+}
+
+/* 返回按钮样式 */
+.back-nav {
   max-width: 1300px;
-  margin: 0 auto;
-  padding: 36px 40px;
-  background: rgba(255, 255, 255, 0.68);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border-radius: 48px;
-  box-shadow: 0 25px 50px -12px rgba(0, 32, 64, 0.25),
-              inset 0 1px 2px rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  margin: 0 auto 20px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8b9a8e;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #8fc1b0;
+}
+
+.back-arrow {
+  font-size: 16px;
 }
 
 .header-section {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  gap: 15px;
+  margin-bottom: 32px;
 }
 
 h2 {
-  font-size: 2.6rem;
-  font-weight: 600;
-  letter-spacing: 2px;
-  background: linear-gradient(135deg, #2c3e50, #1e7b5e, #2d6a4f);
+  font-size: 32px;
+  font-weight: 500;
+  background: linear-gradient(135deg, #2c5a4f, #8fc1b0);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 2px 10px rgba(46, 125, 89, 0.2);
   margin: 0;
-}
-
-.back-link {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #4CAF50;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 8px 16px;
-  border-radius: 20px;
-  background-color: rgba(76, 175, 80, 0.1);
-  transition: all 0.3s ease;
-}
-
-.back-link:hover {
-  background-color: #4CAF50;
-  color: white;
-  transform: translateX(-2px);
-}
-
-.arrow-icon {
-  font-size: 16px;
-  transition: transform 0.3s ease;
-}
-
-.back-link:hover .arrow-icon {
-  transform: translateX(-4px);
+  letter-spacing: 2px;
 }
 
 /* 加载状态 */
 .loading-state {
   text-align: center;
-  padding: 60px 20px;
-  color: #666;
+  padding: 80px 20px;
 }
 
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  margin: 0 auto 20px;
-  border: 3px solid #f0f0f0;
-  border-top-color: #4CAF50;
+.loading-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  background: #8fc1b0;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: bounce 1.4s infinite ease-in-out both;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
 }
 
 /* 错误状态 */
 .error-state {
   text-align: center;
-  padding: 60px 20px;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 28px;
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 .error-icon {
@@ -426,65 +425,57 @@ h2 {
 
 .error-message {
   margin-bottom: 20px;
-  color: #666;
+  color: #8b9a8e;
 }
 
 .retry-btn {
-  background-color: #4CAF50;
+  background: #8fc1b0;
   color: white;
   border: none;
-  padding: 10px 24px;
-  border-radius: 6px;
+  padding: 8px 24px;
+  border-radius: 40px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.3s;
+  transition: background 0.2s;
 }
 
 .retry-btn:hover {
-  background-color: #45a049;
+  background: #7aa992;
 }
 
 /* 空模块状态 */
 .empty-module {
   text-align: center;
-  padding: 40px;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 32px;
-  color: #999;
+  padding: 48px;
+  background: white;
+  border-radius: 24px;
+  color: #b8c4b0;
   font-size: 14px;
+  border: 1px solid #efebe6;
 }
 
+/* 勋章区域 */
 .medal-section {
   margin-bottom: 48px;
 }
 
 .section-title {
-  font-size: 1.8rem;
+  font-size: 22px;
   font-weight: 500;
-  padding-left: 20px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
+  padding-left: 16px;
   display: flex;
   align-items: center;
   gap: 12px;
+  color: #2c5a4f;
 }
 
 .section-title::before {
   content: '';
-  width: 10px;
-  height: 40px;
-  background: linear-gradient(0deg, #2a9d8f, #4caf92);
-  border-radius: 20px;
-  box-shadow: 0 4px 10px rgba(42, 157, 143, 0.5);
-}
-
-.medal-section:nth-of-type(1) .section-title::before {
-  background: linear-gradient(0deg, #e76f51, #f4a261);
-}
-.medal-section:nth-of-type(2) .section-title::before {
-  background: linear-gradient(0deg, #2a9d8f, #2f9e79);
-}
-.medal-section:nth-of-type(3) .section-title::before {
-  background: linear-gradient(0deg, #8e7cc3, #b7a9e0);
+  width: 4px;
+  height: 28px;
+  background: #8fc1b0;
+  border-radius: 2px;
 }
 
 /* 勋章网格 */
@@ -496,222 +487,175 @@ h2 {
 
 /* 勋章卡片 */
 .medal-item {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: white;
   border-radius: 24px;
-  padding: 20px 15px 18px;
+  padding: 24px 16px 20px;
   text-align: center;
-  box-shadow: 0 10px 20px -8px rgba(0, 40, 20, 0.12);
-  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
-  display: flex;
-  flex-direction: column;
-  border: 1px solid rgba(255, 255, 255, 0.7);
+  transition: all 0.2s;
+  border: 1px solid #efebe6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
 .medal-item:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 30px 40px -20px rgba(30, 80, 60, 0.4),
-              0 0 0 2px rgba(255, 255, 255, 0.8) inset,
-              0 0 30px 2px rgba(72, 187, 120, 0.2);
-  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-4px);
+  border-color: #e2e6e0;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.04);
 }
 
 /* 勋章图标 */
 .medal-icon {
-  font-size: 56px;
+  font-size: 48px;
   line-height: 1;
   margin-bottom: 12px;
-  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.1));
-  transition: filter 0.3s, transform 0.3s;
-  transform-origin: center;
-  opacity: 0.6;
-  transform: scale(0.95);
-  position: relative;
-  display: inline-block;
+  transition: all 0.2s;
+  opacity: 0.5;
+  filter: grayscale(0.3);
 }
 
 .medal-icon.unlocked {
   opacity: 1;
-  transform: scale(1);
-  filter: drop-shadow(0 6px 12px rgba(255, 215, 0, 0.4));
-  animation: floatGlow 3s ease-in-out infinite;
+  filter: none;
+  animation: gentlePulse 2s ease-in-out infinite;
+}
+
+@keyframes gentlePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 /* 解锁标记 */
 .medal-icon.unlocked::after {
   content: '✓';
-  position: absolute;
-  font-size: 18px;
-  background: #2ecc71;
+  position: relative;
+  display: inline-block;
+  font-size: 14px;
+  background: #8fc1b0;
   color: white;
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  bottom: 0;
-  right: -6px;
-  box-shadow: 0 3px 8px #2ecc71;
-  border: 2px solid white;
+  margin-left: -12px;
+  margin-bottom: -8px;
+  vertical-align: middle;
   font-weight: bold;
-  animation: pop 0.3s;
-}
-
-@keyframes floatGlow {
-  0% { filter: drop-shadow(0 6px 10px rgba(255, 200, 50, 0.4)); transform: scale(1); }
-  50% { filter: drop-shadow(0 12px 18px rgba(255, 180, 40, 0.6)); transform: scale(1.05); }
-  100% { filter: drop-shadow(0 6px 10px rgba(255, 200, 50, 0.4)); transform: scale(1); }
-}
-
-@keyframes pop {
-  0% { transform: scale(0); }
-  80% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* 勋章名称 */
 .medal-name {
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 500;
   margin-bottom: 6px;
-  background: linear-gradient(145deg, #1e293b, #2d4a3e);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  letter-spacing: 0.3px;
+  color: #2c5a4f;
 }
 
 /* 勋章描述 */
 .medal-desc {
-  font-size: 0.85rem;
-  color: #3b5e4b;
-  background: rgba(220, 240, 230, 0.6);
-  padding: 6px 10px;
-  border-radius: 40px;
+  font-size: 12px;
+  color: #8b9a8e;
+  padding: 4px 8px;
   margin: 6px 0 12px;
-  font-weight: 500;
-  backdrop-filter: blur(2px);
-  border: 1px solid rgba(130, 200, 160, 0.5);
-  width: fit-content;
-  max-width: 90%;
-  margin-left: auto;
-  margin-right: auto;
+  background: #faf8f4;
+  border-radius: 30px;
+  display: inline-block;
 }
 
 .medal-progress {
-  margin-top: auto;
+  margin-top: 12px;
   width: 100%;
 }
 
 /* 进度条 */
 .progress-bar {
   width: 100%;
-  height: 8px;
-  background: rgba(190, 200, 200, 0.3);
-  border-radius: 20px;
+  height: 4px;
+  background: #efebe6;
+  border-radius: 2px;
   overflow: hidden;
   margin-bottom: 6px;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(2px);
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #34b48c, #71cfb0, #2f9e79);
-  border-radius: 20px;
-  transition: width 0.8s ease-out;
-  box-shadow: 0 0 6px #2ecc71;
+  background: linear-gradient(90deg, #8fc1b0, #b8c4b0);
+  border-radius: 2px;
+  transition: width 0.5s ease-out;
 }
 
 /* 进度文字 */
 .progress-text {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #1b5e3f;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(4px);
-  padding: 3px 10px;
-  border-radius: 30px;
-  display: inline-block;
-  border: 1px solid #cae3d7;
-  letter-spacing: 0.2px;
+  font-size: 11px;
+  color: #b8c4b0;
 }
 
-.medal-section:nth-of-type(1) .progress-fill {
-  background: linear-gradient(90deg, #f4a261, #e9b384, #e76f51);
-}
-.medal-section:nth-of-type(2) .progress-fill {
-  background: linear-gradient(90deg, #3b9e8b, #52b9a5, #2a9d8f);
-}
-.medal-section:nth-of-type(3) .progress-fill {
-  background: linear-gradient(90deg, #9f8ad0, #bba6e6, #8e7cc3);
-}
-
-/* 响应式布局 */
-@media (max-width: 720px) {
+/* 响应式 */
+@media (max-width: 768px) {
   .medal-wall {
-    padding: 20px 15px;
-    border-radius: 28px;
+    padding: 20px 20px;
   }
+  
   h2 {
-    font-size: 2rem;
+    font-size: 26px;
   }
+  
   .medal-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 15px;
   }
+  
   .medal-icon {
-    font-size: 48px;
+    font-size: 40px;
   }
+  
   .medal-name {
-    font-size: 1.1rem;
+    font-size: 14px;
   }
-  .medal-desc {
-    font-size: 0.75rem;
-    padding: 4px 8px;
-  }
+  
   .section-title {
-    font-size: 1.3rem;
+    font-size: 18px;
+    padding-left: 12px;
   }
 }
 
 @media (max-width: 480px) {
   .medal-wall {
-    padding: 15px 10px;
+    padding: 16px;
   }
+  
   .header-section {
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-start;
+    margin-bottom: 24px;
   }
+  
   h2 {
-    font-size: 1.8rem;
+    font-size: 22px;
   }
+  
   .medal-grid {
     grid-template-columns: 1fr 1fr;
     gap: 12px;
   }
+  
   .medal-item {
-    padding: 15px 8px;
+    padding: 16px 12px;
   }
+  
   .medal-icon {
-    font-size: 42px;
+    font-size: 36px;
   }
+  
   .medal-icon.unlocked::after {
-    width: 22px;
-    height: 22px;
-    font-size: 16px;
-    right: -5px;
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
   }
+  
   .medal-name {
-    font-size: 1rem;
+    font-size: 13px;
   }
+  
   .medal-desc {
-    font-size: 0.7rem;
-    padding: 4px 6px;
+    font-size: 10px;
   }
 }
 </style>

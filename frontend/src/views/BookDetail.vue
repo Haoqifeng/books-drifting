@@ -1,157 +1,181 @@
 <template>
   <div class="book-detail">
-    <!-- 加载状态与错误提示 -->
-    <div v-if="loading" class="loading-state">
-      <div class="loading-spinner"></div>
-      <p>加载中...</p>
-    </div>
-    <div v-else-if="error" class="error-state">
-      <div class="error-icon">❌</div>
-      <p>{{ error }}</p>
-      <button @click="loadBookData($route.params.id)" class="retry-btn">重试</button>
-    </div>
-    <template v-else>
-      <div class="book-header">
-        <h2>{{ book.title }}</h2>
-        <router-link to="/" class="back-home-btn">
-          <span class="back-icon">←</span> 返回首页
+    <div class="container">
+      <!-- 返回导航 -->
+      <div class="back-nav">
+        <router-link to="/" class="back-link">
+          <span class="back-arrow">←</span> 返回首页
         </router-link>
       </div>
-      
-      <div class="book-info-card">
-        <div class="book-cover-large" v-if="book.coverUrl">
-          <img :src="book.coverUrl" :alt="book.title">
+
+      <!-- 加载状态 -->
+      <div v-if="loading" class="loading-state">
+        <div class="loading-dots">
+          <span></span><span></span><span></span>
         </div>
-        <div class="book-details-wrapper">
-          <div class="book-details">
-            <div class="detail-item">
-              <span class="detail-label">📖 作者</span>
-              <span class="detail-value">{{ book.author }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">📚 ISBN</span>
-              <span class="detail-value">{{ book.isbn || '暂无' }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">📝 描述</span>
-              <span class="detail-value">{{ book.description || '暂无描述' }}</span>
-            </div>
-          </div>
-          
-          <!-- 书籍二维码区域 - 挪到右侧 -->
-          <div class="book-qrcode-side" v-if="book.qrCodeData">
-            <div class="qrcode-side-container">
-              <canvas ref="bookQrCanvas" width="120" height="120" class="book-qrcode-small"></canvas>
-              <p class="qrcode-side-hint">扫码借阅/归还</p>
-              <button @click="downloadQRCode" class="download-qr-btn-small" title="保存二维码">
-                <span class="btn-icon">⬇️</span>
-              </button>
-            </div>
-          </div>
-        </div>
+        <p>加载中...</p>
       </div>
-      
-      <section class="trajectory-section">
-        <div class="section-header">
-          <h3>📊 书籍漂流轨迹</h3>
-          <span class="section-subtitle">从捐赠到现在的完整历程</span>
-        </div>
-        <div id="trajectory-chart" ref="chartRef" class="chart-container"></div>
-        <div class="trajectory-timeline">
-          <div v-for="(record, index) in trajectoryRecords" :key="index" class="timeline-item">
-            <div class="timeline-marker" :class="getTimelineClass(record.action)"></div>
-            <div class="timeline-content">
-              <span class="timeline-time">{{ record.time }}</span>
-              <span class="timeline-action" :class="getActionClass(record.action)">{{ record.action }}</span>
-              <span class="timeline-user">{{ record.user }}</span>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      <section class="notes-section">
-        <div class="section-header">
-          <h3>📝 读书笔记</h3>
-          <div class="notes-controls">
-            <el-select v-model="sortOrder" size="small" placeholder="排序" class="sort-select">
-              <el-option label="最新优先" value="desc" />
-              <el-option label="最早优先" value="asc" />
-            </el-select>
-          </div>
-        </div>
-        
-        <div v-if="notes.length === 0" class="empty-notes">
-          <p>暂无笔记，快来写下第一条笔记吧！</p>
-        </div>
-        
-        <div v-for="note in sortedNotes" :key="note.id" class="note-card">
-          <div class="note-card-header">
-            <div class="note-user-info">
-              <span class="note-user-avatar">{{ note.userName?.charAt(0) || '用' }}</span>
-              <span class="note-user-name">{{ note.userName || note.user }}</span>
-            </div>
-            <span class="note-time">{{ formatDate(note.createdAt || note.time) }}</span>
-          </div>
-          
-          <div v-if="!note.isEditing" class="note-card-content">{{ note.content }}</div>
-          <div v-else class="note-edit-area">
-            <textarea v-model="note.content" rows="3" class="edit-textarea" maxlength="500"></textarea>
-            <div class="word-count">
-              <span :class="{ 'exceed-limit': note.content.length > 500 }">
-                {{ note.content.length }}/500
-              </span>
-            </div>
-            <div class="edit-buttons">
-              <button @click="saveNote(note)" class="btn-save" :disabled="note.content.length > 500">保存</button>
-              <button @click="cancelEdit(note)" class="btn-cancel">取消</button>
+
+      <!-- 错误状态 -->
+      <div v-else-if="error" class="error-state">
+        <div class="error-icon">📖</div>
+        <p>{{ error }}</p>
+        <button @click="loadBookData($route.params.id)" class="retry-btn">重试</button>
+      </div>
+
+      <template v-else>
+        <!-- 书籍信息卡片 -->
+        <div class="book-card">
+          <div class="book-cover">
+            <img v-if="book.coverUrl" :src="book.coverUrl" :alt="book.title">
+            <div v-else class="cover-placeholder">
+              <span>{{ book.title?.charAt(0) || '书' }}</span>
             </div>
           </div>
           
-          <div class="note-card-footer">
-            <button @click="toggleLike(note)" class="like-btn" :class="{ 'liked': note.liked }">
-              <span class="like-icon">{{ note.liked ? '❤️' : '🤍' }}</span>
-              <span>{{ note.likes || 0 }} 点赞</span>
-            </button>
+          <div class="book-info">
+            <h1 class="book-title">{{ book.title }}</h1>
+            <p class="book-author">{{ book.author }}</p>
             
-            <div v-if="isCurrentUser(note)" class="note-actions">
-              <button @click="editNote(note)" class="action-btn edit-btn">编辑</button>
-              <button @click="deleteNote(note)" class="action-btn delete-btn">删除</button>
+            <div class="info-list">
+              <div class="info-item">
+                <span class="info-label">ISBN</span>
+                <span class="info-value">{{ book.isbn || '暂无' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">出版社</span>
+                <span class="info-value">{{ book.publisher || '暂无' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">成色</span>
+                <span class="condition-badge" :class="book.condition">
+                  {{ getConditionText(book.condition) }}
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">状态</span>
+                <span class="status-badge" :class="book.status">
+                  {{ book.status === 'available' ? '可认领' : '已借出' }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="book-description">
+              <h3>内容简介</h3>
+              <p>{{ book.description || '暂无简介' }}</p>
+            </div>
+          </div>
+          
+          <!-- 二维码区域 -->
+          <div class="qrcode-area" v-if="book.qrCodeData">
+            <div class="qrcode-box">
+              <canvas ref="bookQrCanvas" width="120" height="120"></canvas>
+              <p class="qrcode-hint">扫码借阅/归还</p>
+              <button @click="downloadQRCode" class="download-btn">保存二维码</button>
             </div>
           </div>
         </div>
-        
-        <div class="add-note-card">
-          <h4>📝 写下你的读书笔记</h4>
-          <textarea 
-            v-model="newNote" 
-            rows="4" 
-            placeholder="分享你的读书心得、感悟或摘抄...(500字以内)" 
-            maxlength="500" 
-            class="add-textarea"
-          ></textarea>
-          <div class="word-count">
-            <span :class="{ 'exceed-limit': newNote.length > 500 }">
-              {{ newNote.length }}/500
-            </span>
+
+        <!-- 书籍漂流轨迹 - 保留完整功能 -->
+        <div class="trajectory-section">
+          <div class="section-header">
+            <h2>📊 书籍漂流轨迹</h2>
+            <span class="section-subtitle">从捐赠到现在的完整历程</span>
           </div>
-          <button @click="submitNote" class="submit-btn" :disabled="newNote.length > 500 || !newNote.trim()">
-            发布笔记
-          </button>
+          <div id="trajectory-chart" ref="chartRef" class="chart-container"></div>
+          <div class="trajectory-timeline">
+            <div v-for="(record, index) in trajectoryRecords" :key="index" class="timeline-item">
+              <div class="timeline-marker" :class="getTimelineClass(record.action)"></div>
+              <div class="timeline-content">
+                <span class="timeline-time">{{ record.time }}</span>
+                <span class="timeline-action" :class="getActionClass(record.action)">{{ record.action }}</span>
+                <span class="timeline-user">{{ record.user }}</span>
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
-    </template>
+
+        <!-- 读书笔记 -->
+        <div class="notes-section">
+          <div class="notes-header">
+            <h2>📝 读书笔记</h2>
+            <select v-model="sortOrder" class="sort-select">
+              <option value="desc">最新优先</option>
+              <option value="asc">最早优先</option>
+            </select>
+          </div>
+
+          <div v-if="notes.length === 0" class="empty-notes">
+            <p>还没有人留下笔记，写下第一条吧~</p>
+          </div>
+
+          <div v-else class="notes-list">
+            <div v-for="note in sortedNotes" :key="note.id" class="note-card">
+              <div class="note-header">
+                <div class="note-user">
+                  <div class="user-avatar" v-if="note.userAvatar">
+                    <img :src="note.userAvatar" :alt="note.userName" class="avatar-img">
+                  </div>
+                 <div class="user-avatar" v-else>
+                  {{ note.userName?.charAt(0) || 'U' }}
+                 </div>
+                  <span class="user-name">{{ note.userName || note.user }}</span>
+                </div>
+                <span class="note-time">{{ formatDate(note.createdAt || note.time) }}</span>
+              </div>
+
+              <div v-if="!note.isEditing" class="note-content">{{ note.content }}</div>
+              
+              <div v-else class="note-edit">
+                <textarea v-model="note.content" rows="3" maxlength="500"></textarea>
+                <div class="edit-actions">
+                  <button @click="saveNote(note)" class="save-btn" :disabled="note.content.length > 500">保存</button>
+                  <button @click="cancelEdit(note)" class="cancel-btn">取消</button>
+                </div>
+              </div>
+
+              <div class="note-footer">
+                <button @click="toggleLike(note)" class="like-btn" :class="{ liked: note.liked }">
+                  <span>{{ note.liked ? '❤️' : '🤍' }}</span>
+                  <span>{{ note.likes || 0 }}</span>
+                </button>
+                
+                <div v-if="isCurrentUser(note)" class="note-actions">
+                  <button @click="editNote(note)" class="edit-btn">编辑</button>
+                  <button @click="deleteNote(note)" class="delete-btn">删除</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 添加笔记 -->
+          <div class="add-note">
+            <h3>写下你的想法</h3>
+            <textarea 
+              v-model="newNote" 
+              rows="4" 
+              placeholder="分享你的读书心得、感悟或摘抄..."
+              maxlength="500"
+            ></textarea>
+            <div class="word-count">
+              <span :class="{ exceed: newNote.length > 500 }">{{ newNote.length }}/500</span>
+            </div>
+            <button @click="submitNote" class="submit-btn" :disabled="!newNote.trim() || newNote.length > 500">
+              发布笔记
+            </button>
+          </div>
+        </div>
+      </template>
+    </div>
   </div>
 </template>
 
 <script>
 import * as echarts from 'echarts'
-import { Star, StarFilled } from '@element-plus/icons-vue'
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
 import QRCode from 'qrcode'
-
+import { ElMessage } from 'element-plus'
 export default {
-  components: { Star, StarFilled},
   data() {
     return {
       book: null,
@@ -165,7 +189,7 @@ export default {
       apiBaseUrl: 'http://localhost:10011/api',
       currentUser: null,
       handleResize: null,
-      bookQrCanvas: null
+      currentUserAvatar:''
     }
   },
   computed: {
@@ -184,9 +208,7 @@ export default {
   },
   watch: {
     '$route.params.id': {
-      handler(newId) {
-        if (newId) this.loadBookData(newId)
-      },
+      handler(newId) { if (newId) this.loadBookData(newId) },
       immediate: true
     }
   },
@@ -200,33 +222,35 @@ export default {
     }
   },
   methods: {
+    getConditionText(condition) {
+      const map = {
+        new: '崭新',
+        good: '良好',
+        normal: '正常',
+        worn: '破旧'
+      }
+      return map[condition] || condition || '未标注'
+    },
     getCurrentUser() {
       const userInfoStr = localStorage.getItem('userInfo')
       if (userInfoStr) {
         try {
           this.currentUser = JSON.parse(userInfoStr)
-          console.log('当前登录用户:', this.currentUser)
-        } catch (e) {
-          console.error('解析用户信息失败', e)
-        }
+          this.currentUserAvatar = this.currentUser.avatarUrl ||''
+        } catch (e) {}
       }
     },
-    
+   
     isCurrentUser(note) {
-      if (!this.currentUser || !note) return false
-      return note.userId === this.currentUser.id
+      return this.currentUser && note.userId === this.currentUser.id
     },
     
     formatDate(dateStr) {
       if (!dateStr) return ''
       try {
         const date = new Date(dateStr)
-        return date.toLocaleDateString('zh-CN', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
-        })
-      } catch (e) {
+        return `${date.getMonth() + 1}月${date.getDate()}日`
+      } catch {
         return dateStr
       }
     },
@@ -249,51 +273,6 @@ export default {
       }
     },
     
-    // 生成书籍二维码
-    generateBookQRCode() {
-      if (!this.book || !this.book.qrCodeData) return
-      
-      const canvas = this.$refs.bookQrCanvas
-      if (!canvas) return
-      
-      console.log('生成书籍二维码，数据:', this.book.qrCodeData)
-      
-      let qrString = this.book.qrCodeData
-      if (typeof this.book.qrCodeData === 'object') {
-        qrString = JSON.stringify(this.book.qrCodeData)
-      }
-      
-      QRCode.toCanvas(canvas, qrString, {
-        width: 120,
-        margin: 1,
-        color: {
-          dark: '#000000',
-          light: '#ffffff'
-        },
-        errorCorrectionLevel: 'H'
-      }).then(() => {
-        console.log('书籍二维码生成成功')
-      }).catch(error => {
-        console.error('书籍二维码生成失败:', error)
-      })
-    },
-    
-    // 下载二维码
-    downloadQRCode() {
-      const canvas = this.$refs.bookQrCanvas
-      if (!canvas) {
-        ElMessage.error('二维码不存在')
-        return
-      }
-      
-      const link = document.createElement('a')
-      link.download = `${this.book.title}_二维码.png`
-      link.href = canvas.toDataURL('image/png')
-      link.click()
-      
-      ElMessage.success('二维码已保存')
-    },
-    
     async loadBookData(bookId) {
       this.loading = true
       this.error = null
@@ -304,14 +283,9 @@ export default {
       }
       
       try {
-        console.log('正在获取书籍详情，ID:', bookId)
-        
         const response = await axios.get(`${this.apiBaseUrl}/books/${bookId}`)
-        console.log('书籍详情响应:', response.data)
-        
         if (response.data) {
           this.book = response.data
-          
           await this.loadBookTrajectory(bookId)
           await this.loadBookNotes(bookId)
           
@@ -325,9 +299,8 @@ export default {
           this.error = '书籍不存在'
         }
       } catch (err) {
-        console.error('获取书籍详情失败:', err)
         this.error = '加载失败，请重试'
-        this.useMockBookData(bookId)
+        this.useMockData(bookId)
       } finally {
         this.loading = false
       }
@@ -337,151 +310,73 @@ export default {
       try {
         const response = await axios.get(`${this.apiBaseUrl}/books/${bookId}/trajectory`)
         this.trajectoryRecords = response.data || []
-      } catch (err) {
-        console.log('使用模拟轨迹数据')
-        this.trajectoryRecords = [
-          { time: '2024-03-01', action: '捐赠', user: '张三' },
-          { time: '2024-03-05', action: '认领', user: '李四' },
-          { time: '2024-03-10', action: '归还', user: '李四' },
-          { time: '2024-03-15', action: '认领', user: '王五' }
-        ]
+      } catch {
+        this.trajectoryRecords = []
       }
     },
     
     async loadBookNotes(bookId) {
-      try {
-        const response = await axios.get(`${this.apiBaseUrl}/notes/book/${bookId}`)
-        console.log('笔记响应:', response.data)
-        
-        if (response.data && response.data.success) {
-          this.notes = response.data.data.map(note => ({
-            ...note,
-            isEditing: false,
-            backupContent: null,
-            liked: false,
-            userId: note.userId
-          }))
-          
-          if (this.currentUser) {
-            for (const note of this.notes) {
-              try {
-                const likeResponse = await axios.get(`${this.apiBaseUrl}/notes/check-like`, {
-                  params: {
-                    noteId: note.id,
-                    userId: this.currentUser.id
-                  }
-                })
-                note.liked = likeResponse.data.liked || false
-              } catch (e) {
-                note.liked = false
-              }
-            }
-          }
-        } else {
-          this.useMockNotes()
-        }
-      } catch (err) {
-        console.log('使用模拟笔记数据')
-        this.useMockNotes()
+  try {
+    const response = await axios.get(`${this.apiBaseUrl}/notes/book/${bookId}`)
+    console.log('笔记响应:', response.data)
+    
+    if (response.data && response.data.success) {
+      this.notes = response.data.data.map(note => ({
+        ...note,
+        isEditing: false,
+        liked: note.liked || false,
+        userAvatar: note.userAvatar || '',
+        userId: note.userId
+      }))
+    } else {
+      this.notes = []
+    }
+  } catch (err) {
+    console.error('加载笔记失败:', err)
+    this.notes = []
+  }
+},
+    
+    useMockData(bookId) {
+      this.book = {
+        id: bookId,
+        title: '瓦尔登湖',
+        author: '亨利·梭罗',
+        isbn: '9787532767890',
+        publisher: '上海译文出版社',
+        description: '《瓦尔登湖》是美国作家梭罗独居瓦尔登湖畔的记录，描绘了他两年多时间里的所见、所闻和所思。',
+        status: 'available',
+        qrCodeData: JSON.stringify({ bookId: 'BOOK1', title: '瓦尔登湖', donor: '林同学' })
       }
-    },
-    
-    useMockNotes() {
-      const currentUserId = this.currentUser?.id || 1
-      this.notes = [
-        {
-          id: 1,
-          userId: currentUserId,
-          userName: this.currentUser?.name || '当前用户',
-          content: '这本书非常精彩，值得一读！',
-          likes: 3,
-          liked: false,
-          createdAt: '2024-03-15T10:00:00Z',
-          isEditing: false,
-          backupContent: null
-        },
-        {
-          id: 2,
-          userId: 999,
-          userName: '李四',
-          content: '第三章讲得很好，受益匪浅。',
-          likes: 2,
-          liked: false,
-          createdAt: '2024-03-10T08:30:00Z',
-          isEditing: false,
-          backupContent: null
-        },
-        {
-          id: 3,
-          userId: 998,
-          userName: '王五',
-          content: '准备考试用，内容很全面。',
-          likes: 1,
-          liked: false,
-          createdAt: '2024-03-05T14:20:00Z',
-          isEditing: false,
-          backupContent: null
-        }
+      this.trajectoryRecords = [
+        { time: '2024-03-01', action: '捐赠', user: '林同学' },
+        { time: '2024-03-15', action: '认领', user: '陈同学' },
+        { time: '2024-04-10', action: '归还', user: '陈同学' }
       ]
+      this.notes = []
     },
     
-    useMockBookData(bookId) {
-      const mockBooks = {
-        1: {
-          id: 1,
-          title: 'JavaScript高级程序设计',
-          author: 'Nicholas C. Zakas',
-          isbn: '9787121028953',
-          description: 'JavaScript经典教材，适合前端开发学习',
-          qrCodeData: JSON.stringify({
-            bookId: 'BOOK1',
-            title: 'JavaScript高级程序设计',
-            donor: '张三'
-          })
-        },
-        2: {
-          id: 2,
-          title: 'Vue.js实战',
-          author: '梁灏',
-          isbn: '9787302456789',
-          description: 'Vue.js框架实战教程',
-          qrCodeData: JSON.stringify({
-            bookId: 'BOOK2',
-            title: 'Vue.js实战',
-            donor: '李四'
-          })
-        },
-        3: {
-          id: 3,
-          title: '算法导论',
-          author: 'Thomas H. Cormen',
-          isbn: '9787111407010',
-          description: '算法经典教材',
-          qrCodeData: JSON.stringify({
-            bookId: 'BOOK3',
-            title: '算法导论',
-            donor: '王五'
-          })
-        }
+    generateBookQRCode() {
+      if (!this.book?.qrCodeData) return
+      const canvas = this.$refs.bookQrCanvas
+      if (!canvas) return
+      
+      let qrString = this.book.qrCodeData
+      if (typeof this.book.qrCodeData === 'object') {
+        qrString = JSON.stringify(this.book.qrCodeData)
       }
       
-      this.book = mockBooks[bookId] || null
-      if (!this.book) {
-        this.error = '书籍不存在'
-      } else {
-        this.trajectoryRecords = [
-          { time: '2024-03-01', action: '捐赠', user: '张三' },
-          { time: '2024-03-05', action: '认领', user: '李四' }
-        ]
-        this.useMockNotes()
-        
-        this.$nextTick(() => {
-          setTimeout(() => {
-            this.initChart()
-            this.generateBookQRCode()
-          }, 100)
-        })
-      }
+      QRCode.toCanvas(canvas, qrString, { width: 120, margin: 1 })
+        .catch(err => console.error('二维码生成失败:', err))
+    },
+    
+    downloadQRCode() {
+      const canvas = this.$refs.bookQrCanvas
+      if (!canvas) return
+      const link = document.createElement('a')
+      link.download = `${this.book.title}_二维码.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
     },
     
     initChart() {
@@ -513,9 +408,9 @@ export default {
             left: 'center',
             top: 0,
             textStyle: {
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: 'normal',
-              color: '#333'
+              color: '#5a6e5c'
             }
           },
           tooltip: {
@@ -536,7 +431,7 @@ export default {
           xAxis: [{
             type: 'category',
             data: dates,
-            axisLine: { lineStyle: { color: '#999', width: 1 } },
+            axisLine: { lineStyle: { color: '#d4e0d8', width: 1 } },
             axisTick: { show: false },
             axisLabel: {
               formatter: (value, index) => {
@@ -545,7 +440,8 @@ export default {
               },
               interval: 0,
               rotate: 30,
-              fontSize: 11
+              fontSize: 10,
+              color: '#8b9a8e'
             }
           }],
           yAxis: [{
@@ -564,14 +460,11 @@ export default {
                   default: return ''
                 }
               },
-              fontSize: 12,
-              color: '#666'
+              fontSize: 11,
+              color: '#b8c4b0'
             },
             splitLine: { 
-              lineStyle: { 
-                type: 'dashed', 
-                color: '#e0e0e0' 
-              } 
+              lineStyle: { type: 'dashed', color: '#efebe6' } 
             }
           }],
           series: [{
@@ -579,20 +472,14 @@ export default {
             type: 'line',
             smooth: true,
             symbol: 'circle',
-            symbolSize: 10,
-            lineStyle: { width: 3, color: '#4CAF50' },
-            itemStyle: { color: '#4CAF50' },
+            symbolSize: 8,
+            lineStyle: { width: 2, color: '#8fc1b0' },
+            itemStyle: { color: '#8fc1b0' },
             areaStyle: {
               color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: 'rgba(76, 175, 80, 0.3)' },
-                { offset: 1, color: 'rgba(76, 175, 80, 0.1)' }
+                { offset: 0, color: 'rgba(143, 193, 176, 0.3)' },
+                { offset: 1, color: 'rgba(143, 193, 176, 0.05)' }
               ])
-            },
-            markPoint: {
-              data: [
-                { type: 'max', name: '最高' },
-                { type: 'min', name: '最低' }
-              ]
             }
           }]
         }
@@ -615,398 +502,364 @@ export default {
       }
     },
     
-    async toggleLike(targetNote) {
-      const note = this.notes.find(n => n.id === targetNote.id)
-      if (!note) return
-      
+    async toggleLike(note) {
       try {
-        const userId = this.getCurrentUserId()
         const response = await axios.post(`${this.apiBaseUrl}/notes/like`, {
           noteId: note.id,
-          userId: userId
+          userId: this.currentUser?.id || 1
         })
-        
         if (response.data.success) {
           note.liked = response.data.liked
           note.likes += note.liked ? 1 : -1
         }
-      } catch (err) {
-        console.error('点赞失败:', err)
+      } catch {
         note.liked = !note.liked
         note.likes += note.liked ? 1 : -1
       }
     },
     
-    editNote(targetNote) {
-      const note = this.notes.find(n => n.id === targetNote.id)
-      if (note) {
-        note.isEditing = true
-        note.backupContent = note.content
-      }
+    editNote(note) {
+      note.isEditing = true
+      note.backupContent = note.content
     },
     
-    async saveNote(targetNote) {
-      const note = this.notes.find(n => n.id === targetNote.id)
-      if (!note || !note.content.trim()) {
-        ElMessage.warning('笔记内容不能为空')
-        return
-      }
-      
+    async saveNote(note) {
+      if (!note.content.trim()) return
       try {
-        const userId = this.getCurrentUserId()
         const response = await axios.put(`${this.apiBaseUrl}/notes/${note.id}`, {
           content: note.content,
-          userId: userId
+          userId: this.currentUser?.id || 1
         })
-        
         if (response.data.success) {
           note.isEditing = false
           delete note.backupContent
-          ElMessage.success('保存成功')
         }
-      } catch (err) {
-        console.error('保存失败:', err)
-        ElMessage.error('保存失败，请重试')
+      } catch {
         note.isEditing = false
-        delete note.backupContent
       }
     },
     
-    cancelEdit(targetNote) {
-      const note = this.notes.find(n => n.id === targetNote.id)
-      if (note) {
-        note.content = note.backupContent || note.content
-        note.isEditing = false
-        delete note.backupContent
-      }
+    cancelEdit(note) {
+      note.content = note.backupContent || note.content
+      note.isEditing = false
+      delete note.backupContent
     },
     
-    async deleteNote(targetNote) {
-      if (confirm('确定删除吗？')) {
-        try {
-          const userId = this.getCurrentUserId()
-          const response = await axios.delete(`${this.apiBaseUrl}/notes/${targetNote.id}`, {
-            params: { userId }
-          })
-          
-          if (response.data.success) {
-            this.notes = this.notes.filter(n => n.id !== targetNote.id)
-            ElMessage.success('删除成功')
-          }
-        } catch (err) {
-          console.error('删除失败:', err)
-          ElMessage.error('删除失败，请重试')
-          this.notes = this.notes.filter(n => n.id !== targetNote.id)
+    async deleteNote(note) {
+      if (!confirm('确定删除这条笔记吗？')) return
+      try {
+        const response = await axios.delete(`${this.apiBaseUrl}/notes/${note.id}`, {
+          params: { userId: this.currentUser?.id || 1 }
+        })
+        if (response.data.success) {
+          this.notes = this.notes.filter(n => n.id !== note.id)
         }
+      } catch {
+        this.notes = this.notes.filter(n => n.id !== note.id)
       }
     },
     
     async submitNote() {
-      if (!this.newNote.trim() || this.newNote.length > 500) return
+  if (!this.newNote.trim() || this.newNote.length > 500) return
+  
+  try {
+    const response = await axios.post(`${this.apiBaseUrl}/notes`, {
+      bookId: this.book.id,
+      userId: this.currentUser?.id || 1,
+      userName: this.currentUser?.name || '匿名',
+      content: this.newNote
+    })
+    
+    console.log('发布笔记响应:', response.data)
+    
+    if (response.data && response.data.success) {
+      const newNote = response.data.data
+      this.notes.unshift({
+        id: newNote.id,
+        userId: this.currentUser?.id || 1,
+        userName: this.currentUser?.name || '匿名',
+        userAvatar: newNote.userAvatar || this.currentUserAvatar,
+        content: this.newNote,
+        likes: 0,
+        liked: false,
+        createdAt: new Date().toISOString(),
+        isEditing: false,
+        backupContent: null
+      })
+      this.newNote = ''
       
-      try {
-        const userId = this.getCurrentUserId()
-        const userName = this.getCurrentUserName()
-        
-        const response = await axios.post(`${this.apiBaseUrl}/notes`, {
-          bookId: this.book.id,
-          userId: userId,
-          userName: userName,
-          content: this.newNote
-        })
-        
-        if (response.data.success) {
-          const newNote = response.data.data
-          this.notes.push({
-            id: newNote.id,
-            userId: userId,
-            userName: userName,
-            content: this.newNote,
-            likes: 0,
-            liked: false,
-            createdAt: new Date().toISOString(),
-            isEditing: false,
-            backupContent: null
-          })
-          this.newNote = ''
-          
-          window.dispatchEvent(new CustomEvent('stats-updated', { 
-            detail: { userId: userId }
-          }))
-          
-          ElMessage.success('笔记发布成功')
-        }
-      } catch (err) {
-        console.error('提交失败:', err)
-        ElMessage.error('提交失败，请重试')
-      }
-    },
-    
-    getCurrentUserId() {
-      if (this.currentUser) {
-        return this.currentUser.id
-      }
-      const userInfo = localStorage.getItem('userInfo')
-      if (userInfo) {
-        return JSON.parse(userInfo).id
-      }
-      return 1
-    },
-    
-    getCurrentUserName() {
-      if (this.currentUser) {
-        return this.currentUser.name
-      }
-      const userInfo = localStorage.getItem('userInfo')
-      if (userInfo) {
-        return JSON.parse(userInfo).name
-      }
-      return '当前用户'
+      window.dispatchEvent(new CustomEvent('stats-updated', { 
+        detail: { userId: this.currentUser?.id || 1 }
+      }))
+      
+      ElMessage.success('笔记发布成功')
+    } else {
+      ElMessage.error(response.data?.message || '发布失败')
     }
+  } catch (err) {
+    console.error('提交失败:', err)
+    ElMessage.error('提交失败，请重试')
+  }
+}
   }
 }
 </script>
 
 <style scoped>
 .book-detail {
+  background: #faf8f4;
+  min-height: 100vh;
+  padding: 32px 0;
+}
+
+.container {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 30px 20px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  min-height: calc(100vh - 60px);
+  padding: 0 24px;
 }
 
-/* 头部样式 */
-.book-header {
-  display: flex;
-  justify-content: space-between;
+.back-nav {
+  margin-bottom: 24px;
+}
+
+.back-link {
+  display: inline-flex;
   align-items: center;
-  margin-bottom: 30px;
-  background: white;
-  padding: 20px 25px;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.book-header h2 {
-  font-size: 2rem;
-  color: #2c3e50;
-  margin: 0;
-  font-weight: 600;
-  background: linear-gradient(135deg, #2c3e50, #4CAF50);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.back-home-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #4CAF50;
+  gap: 6px;
+  color: #8b9a8e;
   text-decoration: none;
-  font-size: 1rem;
-  padding: 8px 16px;
-  border-radius: 30px;
-  background: rgba(76, 175, 80, 0.1);
-  transition: all 0.3s ease;
+  font-size: 14px;
+  transition: color 0.2s;
 }
 
-.back-home-btn:hover {
-  background: #4CAF50;
-  color: white;
-  transform: translateX(-2px);
+.back-link:hover {
+  color: #8fc1b0;
 }
 
-.back-icon {
-  font-size: 1.2rem;
-}
-
-/* 书籍信息卡片 */
-.book-info-card {
+/* 书籍卡片 */
+.book-card {
   background: white;
-  border-radius: 20px;
-  padding: 30px;
-  margin-bottom: 30px;
+  border-radius: 28px;
+  padding: 32px;
   display: flex;
-  gap: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  gap: 32px;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
+  border: 1px solid #efebe6;
+  margin-bottom: 24px;
 }
 
-.book-cover-large {
-  flex-shrink: 0;
+.book-cover {
   width: 200px;
-  height: 280px;
-  border-radius: 12px;
+  height: 260px;
+  flex-shrink: 0;
+  background: #f5f0e8;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-.book-cover-large img {
+.book-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
 }
 
-.book-cover-large:hover img {
-  transform: scale(1.05);
-}
-
-.book-details-wrapper {
-  flex: 1;
-  display: flex;
-  gap: 30px;
-  align-items: flex-start;
-}
-
-.book-details {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.detail-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 15px;
-  padding: 12px 15px;
-  background: #f8f9fa;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-}
-
-.detail-item:hover {
-  transform: translateX(5px);
-  background: #e9ecef;
-}
-
-.detail-label {
-  font-size: 1rem;
-  color: #4CAF50;
-  font-weight: 600;
-  min-width: 60px;
-}
-
-.detail-value {
-  font-size: 1rem;
-  color: #2c3e50;
-  line-height: 1.5;
-}
-
-/* 侧边二维码样式 */
-.book-qrcode-side {
-  flex-shrink: 0;
-  width: 140px;
-  background: linear-gradient(135deg, #f8f9fa, #ffffff);
-  border-radius: 16px;
-  padding: 15px 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(76, 175, 80, 0.2);
+.cover-placeholder {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(135deg, #e8f0ec, #dde9e2);
+  font-size: 64px;
+  font-weight: 500;
+  color: #8fc1b0;
 }
 
-.qrcode-side-container {
+.book-info {
+  flex: 1;
+}
+
+.book-title {
+  font-size: 28px;
+  font-weight: 500;
+  color: #2c5a4f;
+  margin: 0 0 8px 0;
+}
+
+.book-author {
+  font-size: 16px;
+  color: #8b9a8e;
+  margin-bottom: 24px;
+}
+
+.info-list {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #efebe6;
+}
+
+.info-item {
+  display: flex;
+  align-items: baseline;
   gap: 8px;
-  text-align: center;
 }
 
-.book-qrcode-small {
-  width: 120px;
-  height: 120px;
-  padding: 8px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  border: 2px solid #f0f0f0;
-  transition: transform 0.3s ease;
+.info-label {
+  font-size: 13px;
+  color: #b8c4b0;
 }
 
-.book-qrcode-small:hover {
-  transform: scale(1.05);
+.info-value {
+  font-size: 14px;
+  color: #5a6e5c;
 }
 
-.qrcode-side-hint {
-  color: #666;
-  font-size: 0.8rem;
-  margin: 2px 0;
+condition-badge {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: 500;
 }
 
-.download-qr-btn-small {
-  background: #4CAF50;
-  color: white;
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.condition-badge.new {
+  background: #e8f0ec;
+  color: #8fc1b0;
+}
+
+.condition-badge.good {
+  background: #e8f0ec;
+  color: #8fc1b0;
+}
+
+.condition-badge.normal {
+  background: #f5f0e8;
+  color: #c9b6a0;
+}
+
+.condition-badge.worn {
+  background: #fef0ec;
+  color: #e8a4a4;
+}
+.status-badge {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.status-badge.available {
+  background: #e8f0ec;
+  color: #8fc1b0;
+}
+
+.status-badge.borrowed {
+  background: #f5f0e8;
+  color: #c9b6a0;
+}
+
+.book-description h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #5a6e5c;
+  margin: 0 0 12px 0;
+}
+
+.book-description p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #6c826e;
+  margin: 0;
+}
+
+/* 二维码区域 */
+.qrcode-area {
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.qrcode-box {
+  background: #faf8f4;
+  padding: 16px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+.qrcode-box canvas {
+  background: white;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.qrcode-hint {
+  font-size: 11px;
+  color: #b8c4b0;
+  margin: 8px 0;
+}
+
+.download-btn {
+  background: none;
+  border: 1px solid #e2e6e0;
+  padding: 6px 16px;
+  border-radius: 30px;
+  font-size: 12px;
+  color: #8fc1b0;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
-  font-size: 1.2rem;
+  transition: all 0.2s;
 }
 
-.download-qr-btn-small:hover {
-  background: #45a049;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+.download-btn:hover {
+  background: #e8f0ec;
+  border-color: #8fc1b0;
 }
 
-/* 章节通用样式 */
+/* 漂流轨迹区域 - 完整保留 */
+.trajectory-section {
+  background: white;
+  border-radius: 28px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  border: 1px solid #efebe6;
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  padding: 0 10px;
 }
 
-.section-header h3 {
-  font-size: 1.5rem;
-  color: #2c3e50;
+.section-header h2 {
+  font-size: 20px;
+  font-weight: 500;
+  color: #2c5a4f;
   margin: 0;
-  font-weight: 600;
 }
 
 .section-subtitle {
-  color: #999;
-  font-size: 0.9rem;
-}
-
-/* 轨迹区域 */
-.trajectory-section {
-  background: white;
-  border-radius: 20px;
-  padding: 25px;
-  margin-bottom: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  font-size: 12px;
+  color: #b8c4b0;
 }
 
 .chart-container {
   width: 100%;
-  height: 350px;
+  height: 300px;
   margin: 20px 0;
 }
 
 .trajectory-timeline {
-  margin-top: 30px;
-  padding: 0 20px;
+  margin-top: 20px;
+  padding: 0 12px;
 }
 
 .timeline-item {
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 15px;
+  gap: 16px;
+  margin-bottom: 16px;
   position: relative;
   padding-left: 20px;
 }
@@ -1014,11 +867,11 @@ export default {
 .timeline-item::before {
   content: '';
   position: absolute;
-  left: 0;
-  top: 0;
-  bottom: -15px;
+  left: 4px;
+  top: 16px;
+  bottom: -16px;
   width: 2px;
-  background: linear-gradient(to bottom, #4CAF50, #8BC34A);
+  background: linear-gradient(to bottom, #e2e6e0, #f5f0e8);
 }
 
 .timeline-item:last-child::before {
@@ -1026,463 +879,426 @@ export default {
 }
 
 .timeline-marker {
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   z-index: 1;
 }
 
 .marker-donate {
-  background: linear-gradient(135deg, #FF6B6B, #FF8E8E);
-  box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.2);
+  background: #c9b6a0;
+  box-shadow: 0 0 0 3px rgba(201, 182, 160, 0.15);
 }
 
 .marker-borrow {
-  background: linear-gradient(135deg, #4CAF50, #8BC34A);
-  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.2);
+  background: #8fc1b0;
+  box-shadow: 0 0 0 3px rgba(143, 193, 176, 0.15);
 }
 
 .marker-return {
-  background: linear-gradient(135deg, #2196F3, #64B5F6);
-  box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.2);
+  background: #b8c4b0;
+  box-shadow: 0 0 0 3px rgba(184, 196, 176, 0.15);
 }
 
 .timeline-content {
   display: flex;
-  gap: 20px;
   align-items: center;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
 .timeline-time {
-  font-weight: 600;
-  color: #2c3e50;
-  min-width: 100px;
+  font-size: 13px;
+  color: #b8c4b0;
+  min-width: 90px;
 }
 
 .timeline-action {
   padding: 4px 12px;
   border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 12px;
 }
 
 .action-donate {
-  background: rgba(255, 107, 107, 0.1);
-  color: #FF6B6B;
+  background: #f5f0e8;
+  color: #c9b6a0;
 }
 
 .action-borrow {
-  background: rgba(76, 175, 80, 0.1);
-  color: #4CAF50;
+  background: #e8f0ec;
+  color: #8fc1b0;
 }
 
 .action-return {
-  background: rgba(33, 150, 243, 0.1);
-  color: #2196F3;
+  background: #efebe6;
+  color: #b8c4b0;
 }
 
 .timeline-user {
-  color: #666;
+  font-size: 13px;
+  color: #5a6e5c;
 }
 
 /* 笔记区域 */
 .notes-section {
   background: white;
-  border-radius: 20px;
-  padding: 25px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border-radius: 28px;
+  padding: 28px 32px;
+  border: 1px solid #efebe6;
 }
 
-.notes-controls {
+.notes-header {
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.notes-header h2 {
+  font-size: 20px;
+  font-weight: 500;
+  color: #2c5a4f;
+  margin: 0;
 }
 
 .sort-select {
-  width: 120px;
+  padding: 6px 12px;
+  border: 1px solid #e2e6e0;
+  border-radius: 30px;
+  background: white;
+  font-size: 13px;
+  color: #5a6e5c;
+  cursor: pointer;
 }
 
 .empty-notes {
   text-align: center;
-  padding: 60px;
-  color: #999;
-  background: #f8f9fa;
-  border-radius: 16px;
-  margin: 20px 0;
+  padding: 48px;
+  color: #b8c4b0;
+  background: #faf8f4;
+  border-radius: 20px;
 }
 
-/* 笔记卡片 */
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
 .note-card {
-  background: #f8f9fa;
-  border-radius: 16px;
+  background: #faf8f4;
+  border-radius: 20px;
   padding: 20px;
-  margin-bottom: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  transition: all 0.3s ease;
 }
 
-.note-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-}
-
-.note-card-header {
+.note-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
 }
 
-.note-user-info {
+.note-user {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
-.note-user-avatar {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, #4CAF50, #8BC34A);
-  color: white;
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #e8f0ec, #dde9e2);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  font-size: 1rem;
+  font-size: 14px;
+  font-weight: 500;
+  color: #8fc1b0;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
-.note-user-name {
-  font-weight: 600;
-  color: #2c3e50;
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #5a6e5c;
 }
 
 .note-time {
-  color: #999;
-  font-size: 0.9rem;
+  font-size: 12px;
+  color: #b8c4b0;
 }
 
-.note-card-content {
-  font-size: 1rem;
+.note-content {
+  font-size: 14px;
   line-height: 1.6;
-  color: #333;
-  margin-bottom: 15px;
-  padding: 10px;
-  background: white;
-  border-radius: 12px;
+  color: #6c826e;
+  margin-bottom: 16px;
 }
 
-.note-card-footer {
+.note-edit textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e2e6e0;
+  border-radius: 16px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 12px;
+  background: white;
+}
+
+.note-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
 }
 
 .like-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: 6px;
+  background: none;
   border: none;
-  background: white;
-  border-radius: 30px;
+  font-size: 14px;
+  color: #b8c4b0;
   cursor: pointer;
-  transition: all 0.3s ease;
-  color: #666;
-}
-
-.like-btn:hover {
-  background: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 30px;
+  transition: all 0.2s;
 }
 
 .like-btn.liked {
-  color: #FF6B6B;
-}
-
-.like-icon {
-  font-size: 1.2rem;
+  color: #e8a4a4;
 }
 
 .note-actions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
-.action-btn {
-  padding: 6px 12px;
+.edit-btn, .delete-btn {
+  background: none;
   border: none;
-  border-radius: 20px;
+  font-size: 12px;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
+  padding: 4px 8px;
+  border-radius: 30px;
+  transition: all 0.2s;
 }
 
 .edit-btn {
-  background: rgba(33, 150, 243, 0.1);
-  color: #2196F3;
+  color: #8fc1b0;
 }
 
 .edit-btn:hover {
-  background: #2196F3;
-  color: white;
+  background: #e8f0ec;
 }
 
 .delete-btn {
-  background: rgba(244, 67, 54, 0.1);
-  color: #f44336;
+  color: #e8a4a4;
 }
 
 .delete-btn:hover {
-  background: #f44336;
-  color: white;
+  background: #fef0ec;
 }
 
-/* 笔记编辑区域 */
-.note-edit-area {
-  margin: 10px 0;
-}
-
-.edit-textarea {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  font-size: 1rem;
-  resize: vertical;
-  transition: border-color 0.3s;
-}
-
-.edit-textarea:focus {
-  outline: none;
-  border-color: #4CAF50;
-}
-
-.edit-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 10px;
-}
-
-.btn-save, .btn-cancel {
-  padding: 8px 20px;
-  border: none;
+.save-btn, .cancel-btn {
+  padding: 6px 16px;
   border-radius: 30px;
+  font-size: 12px;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
+  border: none;
 }
 
-.btn-save {
-  background: #4CAF50;
+.save-btn {
+  background: #8fc1b0;
   color: white;
 }
 
-.btn-save:hover:not(:disabled) {
-  background: #45a049;
-  transform: translateY(-2px);
-}
-
-.btn-save:disabled {
-  background: #ccc;
+.save-btn:disabled {
+  background: #e2e6e0;
   cursor: not-allowed;
 }
 
-.btn-cancel {
-  background: #e0e0e0;
-  color: #666;
+.cancel-btn {
+  background: none;
+  border: 1px solid #e2e6e0;
+  color: #b8c4b0;
 }
 
-.btn-cancel:hover {
-  background: #d0d0d0;
+.edit-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
-/* 添加笔记卡片 */
-.add-note-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 20px;
-  padding: 25px;
-  margin-top: 30px;
-  color: white;
+/* 添加笔记 */
+.add-note {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #efebe6;
 }
 
-.add-note-card h4 {
-  margin: 0 0 15px;
-  font-size: 1.3rem;
+.add-note h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #5a6e5c;
+  margin: 0 0 16px 0;
 }
 
-.add-textarea {
+.add-note textarea {
   width: 100%;
-  padding: 15px;
-  border: none;
-  border-radius: 12px;
-  font-size: 1rem;
+  padding: 16px;
+  border: 1px solid #e2e6e0;
+  border-radius: 20px;
+  font-size: 14px;
+  font-family: inherit;
   resize: vertical;
-  margin-bottom: 10px;
+  background: #faf8f4;
 }
 
-.add-textarea:focus {
+.add-note textarea:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+  border-color: #8fc1b0;
+}
+
+.word-count {
+  text-align: right;
+  font-size: 11px;
+  color: #b8c4b0;
+  margin: 8px 0 12px;
+}
+
+.word-count .exceed {
+  color: #e8a4a4;
 }
 
 .submit-btn {
-  width: 100%;
-  padding: 12px;
-  background: white;
-  color: #4CAF50;
+  background: #8fc1b0;
   border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: 40px;
+  color: white;
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.2s;
 }
 
 .submit-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  background: #7aa992;
 }
 
 .submit-btn:disabled {
-  background: #ccc;
+  background: #e2e6e0;
   cursor: not-allowed;
 }
 
 /* 加载状态 */
 .loading-state {
   text-align: center;
-  padding: 100px 20px;
+  padding: 80px 20px;
 }
 
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  margin: 0 auto 20px;
-  border: 4px solid #f0f0f0;
-  border-top-color: #4CAF50;
+.loading-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  background: #8fc1b0;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: bounce 1.4s infinite ease-in-out both;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
 }
 
 /* 错误状态 */
 .error-state {
   text-align: center;
-  padding: 100px 20px;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 28px;
 }
 
 .error-icon {
   font-size: 48px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .retry-btn {
-  padding: 10px 30px;
-  background: #4CAF50;
-  color: white;
+  margin-top: 20px;
+  padding: 8px 24px;
+  background: #8fc1b0;
   border: none;
-  border-radius: 30px;
-  font-size: 1rem;
+  border-radius: 40px;
+  color: white;
   cursor: pointer;
-  transition: all 0.3s ease;
 }
 
-.retry-btn:hover {
-  background: #45a049;
-  transform: translateY(-2px);
-}
-
-/* 字数统计 */
-.word-count {
-  text-align: right;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 10px;
-}
-
-.exceed-limit {
-  color: #ff6b6b;
-  font-weight: bold;
-}
-
-/* 响应式设计 */
+/* 响应式 */
 @media (max-width: 768px) {
-  .book-info-card {
+  .book-card {
     flex-direction: column;
     align-items: center;
     text-align: center;
   }
   
-  .book-cover-large {
+  .info-list {
+    justify-content: center;
+  }
+  
+  .book-cover {
     width: 160px;
-    height: 220px;
-  }
-  
-  .book-details-wrapper {
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-  }
-  
-  .book-details {
-    width: 100%;
-  }
-  
-  .detail-item {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+    height: 210px;
   }
   
   .timeline-content {
     flex-direction: column;
     align-items: flex-start;
-    gap: 5px;
+    gap: 8px;
   }
   
-  .book-header {
+  .notes-header {
     flex-direction: column;
-    gap: 15px;
-    text-align: center;
+    gap: 12px;
+    align-items: flex-start;
   }
   
-  .book-header h2 {
-    font-size: 1.5rem;
-  }
-  
-  .book-qrcode-side {
-    width: 100%;
-    max-width: 200px;
-    margin-top: 15px;
+  .chart-container {
+    height: 250px;
   }
 }
 
 @media (max-width: 480px) {
-  .book-detail {
-    padding: 15px;
+  .container {
+    padding: 0 16px;
   }
   
-  .note-card-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+  .book-card, .trajectory-section, .notes-section {
+    padding: 20px;
   }
   
-  .note-card-footer {
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-start;
-  }
-  
-  .note-actions {
-    width: 100%;
-    justify-content: flex-end;
+  .book-title {
+    font-size: 22px;
   }
 }
 </style>

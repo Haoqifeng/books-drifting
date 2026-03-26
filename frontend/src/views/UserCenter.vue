@@ -1,38 +1,11 @@
 <template>
   <div class="user-center" :class="themeClass">
-    <!-- 背景装饰 -->
-    <div class="bg-decoration"></div>
-    
-    <!-- 主题切换按钮 -->
-    <div class="theme-switcher">
-      <button 
-        class="theme-toggle" 
-        @click="showThemePanel = !showThemePanel"
-        :title="'切换主题'"
-      >
-        <span class="theme-icon">🎨</span>
-      </button>
-      
-      <!-- 主题选择面板 -->
-      <div v-if="showThemePanel" class="theme-panel">
-        <h4>选择主题色</h4>
-        <div class="theme-colors">
-          <button 
-            v-for="theme in themes" 
-            :key="theme.value"
-            class="theme-color-btn"
-            :class="{ active: currentTheme === theme.value }"
-            :style="{ background: theme.gradient }"
-            @click="changeTheme(theme.value)"
-            :title="theme.name"
-          >
-            <span class="theme-name">{{ theme.name }}</span>
-          </button>
-        </div>
-        <button class="theme-close" @click="showThemePanel = false">✕</button>
-      </div>
+    <div class="back-nav">
+      <router-link to="/" class="back-link">
+        <span class="back-arrow">←</span> 返回首页
+      </router-link>
     </div>
-
+    
     <h2>个人中心</h2>
     
     <!-- 用户信息卡片 -->
@@ -47,7 +20,12 @@
         </div>
       </div>
       <div class="info-content">
+        <div class="info-header">
         <h3>用户信息</h3>
+        <button class="edit-info-btn" @click="openEditInfoDialog">
+          ✏️ 编辑
+        </button>
+        </div>
         <div class="info-item">
           <span class="label">学号:</span>
           <span class="value">{{ userInfo.studentId || '2021001' }}</span>
@@ -64,6 +42,11 @@
           <span class="label">邮箱:</span>
           <span class="value">{{ userInfo.email || 'zhangsan@example.com' }}</span>
         </div>
+        <div class="info-item">
+          <button class="change-pwd-btn" @click="openChangePwdDialog">
+            🔒 修改密码
+          </button>
+        </div>
       </div>
       <div class="qrcode-section">
         <h3>用户专属二维码</h3>
@@ -73,7 +56,87 @@
         </div>
       </div>
     </div>
+    <!-- 修改信息弹窗 -->
+    <div v-if="editInfoDialogVisible" class="modal-overlay" @click="closeEditInfoDialog">
+      <div class="modal-container" @click.stop>
+        <div class="modal-header">
+          <h3>编辑个人信息</h3>
+          <button class="close-btn" @click="closeEditInfoDialog">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>姓名 <span class="required">*</span></label>
+            <input type="text" v-model="editForm.name" placeholder="请输入姓名">
+          </div>
+          <div class="form-group">
+            <label>手机号</label>
+            <input type="tel" v-model="editForm.phone" placeholder="请输入11位手机号" 
+            maxlength="11" 
+            @input="validatePhone(editForm.phone)"
+            @blur="validatePhone(editForm.phone)">
+            <span v-if="phoneError" class="error-hint">{{ phoneError }}</span>
+            <span v-else-if="editForm.phone && editForm.phone.length > 0 
+            && editForm.phone.length === 11 && !phoneError" class="success-hint">✓ 手机号格式正确</span>
+            <span v-else-if="editForm.phone && editForm.phone.length < 11 
+            && editForm.phone.length > 0" class="warning-hint">还需输入
+             {{ 11 - editForm.phone.length }} 位</span>
+          </div>
+          <div class="form-group">
+            <label>邮箱</label>
+            <input type="email" v-model="editForm.email" placeholder="请输入邮箱"
+            @input="validateEmail(editForm.email)"
+            @blur="validateEmail(editForm.email)">
+            <span v-if="emailError" class="error-hint">{{ emailError }}</span>
+            <span v-else-if="editForm.email && !emailError" class="success-hint">✓ 邮箱格式正确</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" @click="closeEditInfoDialog">取消</button>
+          <button class="btn-save" @click="saveUserInfo" :disabled="saving">
+            {{ saving ? '保存中...' : '保存' }}
+          </button>
+        </div>
+      </div>
+    </div>
     
+    <!-- 修改密码弹窗 -->
+    <div v-if="changePwdDialogVisible" class="modal-overlay" @click="closeChangePwdDialog">
+      <div class="modal-container" @click.stop>
+        <div class="modal-header">
+          <h3>修改密码</h3>
+          <button class="close-btn" @click="closeChangePwdDialog">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>原密码 <span class="required">*</span></label>
+            <input type="password" v-model="pwdForm.oldPassword" placeholder="请输入原密码">
+          </div>
+          <div class="form-group">
+            <label>新密码 <span class="required">*</span></label>
+            <input type="password" v-model="pwdForm.newPassword" placeholder="请输入新密码（至少6位）"
+            @input="validateNewPassword"
+            @blur="validateNewPassword">
+            <span v-if="pwdError" class="error-hint">{{ pwdError }}</span>
+            <span v-else-if="pwdForm.newPassword && pwdForm.newPassword.length < 6 && pwdForm.newPassword.length > 0" class="warning-hint">还需输入 {{ 6 - pwdForm.newPassword.length }} 位</span>
+        <span v-else-if="pwdForm.newPassword && pwdForm.newPassword.length >= 6" class="success-hint">✓ 密码强度足够</span>
+          </div>
+          <div class="form-group">
+            <label>确认新密码 <span class="required">*</span></label>
+            <input type="password" v-model="pwdForm.confirmPassword" placeholder="请再次输入新密码"
+            @input="validateConfirmPassword"
+            @blur="validateConfirmPassword">
+            <span v-if="confirmPwdError" class="error-hint">{{ confirmPwdError }}</span>
+        <span v-else-if="pwdForm.confirmPassword && pwdForm.newPassword === pwdForm.confirmPassword" class="success-hint">✓ 密码一致</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" @click="closeChangePwdDialog">取消</button>
+          <button class="btn-save" @click="saveNewPassword" :disabled="changingPwd">
+            {{ changingPwd ? '修改中...' : '确认修改' }}
+          </button>
+        </div>
+      </div>
+    </div>
     <!-- 统计信息 -->
     <div class="user-stats">
       <h3>统计信息</h3>
@@ -277,8 +340,30 @@ export default {
           name: '梦幻紫',
           gradient: 'linear-gradient(135deg, #5f2c82 0%, #49a09d 100%)'
         }
-      ]
+      ],
+      // 编辑信息弹窗
+    editInfoDialogVisible: false,
+    editForm: {
+      name: '',
+      phone: '',
+      email: ''
+    },
+    saving: false,
+    phoneError: '',
+    emailError: '',
+    
+    // 修改密码弹窗
+    changePwdDialogVisible: false,
+    pwdForm: {
+      oldPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    },
+    changingPwd: false,
+    pwdError: '',
+    confirmPwdError: ''
     }
+  
   },
   computed: {
     unlockedMedals() {
@@ -312,12 +397,14 @@ export default {
     
     // 点击其他地方关闭主题面板
     document.addEventListener('click', this.handleClickOutside);
+    window.addEventListener('book-status-changed', this.handleBookStatusChanged)
   },
   beforeDestroy() {
     // 移除事件监听
     window.removeEventListener('stats-updated', this.handleStatsUpdated);
     window.removeEventListener('borrowed-books-updated', this.handleBorrowedBooksUpdated);
     document.removeEventListener('click', this.handleClickOutside);
+    window.removeEventListener('book-status-changed', this.handleBookStatusChanged)
   },
   mounted() {
     this.generateUserQRCode();
@@ -328,7 +415,13 @@ export default {
       const themeSwitcher = this.$el.querySelector('.theme-switcher')
       if (themeSwitcher && !themeSwitcher.contains(event.target)) {
         this.showThemePanel = false
-      }
+      }},
+    handleBookStatusChanged(event) {
+    const { bookId, status } = event.detail
+    // 如果书籍状态变为可借阅，并且当前用户借阅列表中包含这本书，则刷新借阅列表
+    if (status === 'available') {
+      this.fetchBorrowedBooks()  // 重新获取当前用户的借阅列表
+    }
     },
     
     // 切换主题
@@ -817,7 +910,221 @@ export default {
         note: '条'
       };
       return unitMap[type] || '个';
+    },
+    // 打开编辑信息弹窗
+  openEditInfoDialog() {
+    this.editForm = {
+      name: this.userInfo.name || '',
+      phone: this.userInfo.phone || '',
+      email: this.userInfo.email || ''
     }
+    this.phoneError = ''
+    this.emailError = ''
+    this.editInfoDialogVisible = true
+  },
+  
+  // 关闭编辑信息弹窗
+  closeEditInfoDialog() {
+    this.editInfoDialogVisible = false
+    this.editForm = { name: '', phone: '', email: '' }
+  },
+  
+  // 验证手机号
+  validatePhone(phone) {
+    if (!phone) return true
+    const phoneRegex = /^1[3-9]\d{9}$/
+    if (!phoneRegex.test(phone)) {
+      this.phoneError = '手机号格式不正确'
+      return false
+    }
+    this.phoneError = ''
+    return true
+  },
+  
+  // 验证邮箱
+  validateEmail(email) {
+    if (!email) return true
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      this.emailError = '邮箱格式不正确'
+      return false
+    }
+    this.emailError = ''
+    return true
+  },
+  
+  // 保存用户信息
+  async saveUserInfo() {
+    // 验证姓名
+    if (!this.editForm.name || this.editForm.name.trim().length < 2) {
+      alert('姓名至少2个字符')
+      return
+    }
+    
+    // 验证手机号
+    if (this.editForm.phone && !this.validatePhone(this.editForm.phone)) {
+      return
+    }
+    
+    // 验证邮箱
+    if (this.editForm.email && !this.validateEmail(this.editForm.email)) {
+      return
+    }
+    
+    this.saving = true
+    try {
+      const userId = this.getCurrentUserId()
+      const token = localStorage.getItem('token')
+      
+      const response = await fetch(`${this.apiBaseUrl}/users/info/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({
+          name: this.editForm.name.trim(),
+          phone: this.editForm.phone || '',
+          email: this.editForm.email || ''
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        // 更新本地用户信息
+        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+        userInfo.name = this.editForm.name.trim()
+        userInfo.phone = this.editForm.phone || ''
+        userInfo.email = this.editForm.email || ''
+        localStorage.setItem('userInfo', JSON.stringify(userInfo))
+        
+        // 更新页面显示
+        this.userInfo = userInfo
+        
+        alert('修改成功')
+        this.closeEditInfoDialog()
+      } else {
+        alert(data.message || '修改失败')
+      }
+    } catch (err) {
+      console.error('修改失败:', err)
+      alert('修改失败，请重试')
+    } finally {
+      this.saving = false
+    }
+  },
+  
+  // 打开修改密码弹窗
+  openChangePwdDialog() {
+    this.pwdForm = {
+      oldPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    }
+    this.pwdError = ''
+    this.changePwdDialogVisible = true
+  },
+  
+  // 关闭修改密码弹窗
+  closeChangePwdDialog() {
+    this.changePwdDialogVisible = false
+  },
+  
+  // 保存新密码
+  async saveNewPassword() {
+    // 验证原密码
+    if (!this.pwdForm.oldPassword) {
+      this.pwdError = '请输入原密码'
+      return
+    }
+    
+    // 验证新密码
+    if (!this.pwdForm.newPassword) {
+      this.pwdError = '请输入新密码'
+      return
+    }
+    if (this.pwdForm.newPassword.length < 6) {
+      this.pwdError = '新密码长度至少6位'
+      return
+    }
+    
+    // 验证确认密码
+    if (this.pwdForm.newPassword !== this.pwdForm.confirmPassword) {
+      this.pwdError = '两次输入的密码不一致'
+      return
+    }
+    
+    this.pwdError = ''
+    this.changingPwd = true
+    
+    try {
+      const userId = this.getCurrentUserId()
+      const token = localStorage.getItem('token')
+      
+      const response = await fetch(`${this.apiBaseUrl}/users/password/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({
+          oldPassword: this.pwdForm.oldPassword,
+          newPassword: this.pwdForm.newPassword
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        alert('密码修改成功，请重新登录')
+        this.closeChangePwdDialog()
+        
+        // 退出登录
+        localStorage.removeItem('userInfo')
+        localStorage.removeItem('token')
+        this.$router.push('/login')
+      } else {
+        alert(data.message || '修改失败')
+      }
+    } catch (err) {
+      console.error('修改密码失败:', err)
+      alert('修改失败，请重试')
+    } finally {
+      this.changingPwd = false
+    }
+    
+  },
+   // 验证新密码
+  validateNewPassword() {
+    if (!this.pwdForm.newPassword) {
+      this.pwdError = ''
+      return
+    }
+    if (this.pwdForm.newPassword.length < 6) {
+      this.pwdError = '新密码长度至少6位'
+    } else {
+      this.pwdError = ''
+    }
+    // 如果确认密码已填，重新验证确认密码
+    if (this.pwdForm.confirmPassword) {
+      this.validateConfirmPassword()
+    }
+  },
+  
+  // 验证确认密码
+  validateConfirmPassword() {
+    if (!this.pwdForm.confirmPassword) {
+      this.confirmPwdError = ''
+      return
+    }
+    if (this.pwdForm.newPassword !== this.pwdForm.confirmPassword) {
+      this.confirmPwdError = '两次输入的密码不一致'
+    } else {
+      this.confirmPwdError = ''
+    }
+  }
+  
   },
   watch: {
     userInfo: {
@@ -831,220 +1138,70 @@ export default {
 </script>
 
 <style scoped>
-/* ==================== 全局样式（完全对齐 Home.vue） ==================== */
+/* ==================== 清新风格样式 ==================== */
 .user-center {
+  background: #faf8f4;
   min-height: 100vh;
-  background-attachment: fixed;
-  position: relative;
-  transition: background 0.5s ease;
-  padding: 20px;
+  padding: 32px 20px;
 }
 
-/* 背景装饰（完全对齐 Home.vue） */
-.bg-decoration {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.05"><path d="M20 20 L80 20 L80 80 L20 80 Z" fill="none" stroke="white" stroke-width="2"/><circle cx="50" cy="50" r="20" fill="none" stroke="white" stroke-width="2"/></svg>') repeat;
-  pointer-events: none;
-  z-index: 0;
+/* 返回按钮样式 */
+.back-nav {
+  max-width: 1000px;
+  margin: 0 auto 20px;
 }
 
-/* 主题样式 - 完全对齐 Home.vue */
-.user-center.theme-default {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #4facfe 100%);
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8b9a8e;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
 }
 
-.user-center.theme-green {
-  background: linear-gradient(135deg, #dbdbdb 0%, #2f6e62 100%);
+.back-link:hover {
+  color: #8fc1b0;
 }
 
-.user-center.theme-blue {
-  background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+.back-arrow {
+  font-size: 16px;
 }
 
-.user-center.theme-orange {
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+h2 {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 500;
+  color: #2c5a4f;
+  margin-bottom: 32px;
 }
 
-.user-center.theme-pink {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.user-center.theme-purple {
-  background: linear-gradient(135deg, #5f2c82 0%, #49a09d 100%);
-}
-
-/* ==================== 毛玻璃卡片样式 ==================== */
+/* 毛玻璃卡片样式 */
 .glass-card {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
+  background: white;
+  backdrop-filter: none;
+  border: 1px solid #efebe6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s;
 }
 
 .glass-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 30px -10px rgba(0, 0, 0, 0.4);
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* ==================== 主题切换器（完全对齐 Home.vue） ==================== */
-.theme-switcher {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 100;
-}
-
-.theme-toggle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  color: white;
-  font-size: 1.2rem;
-}
-
-.theme-toggle:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: rotate(180deg);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.theme-panel {
-  position: absolute;
-  top: 50px;
-  right: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  width: 280px;
-  z-index: 1000;
-  animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.theme-panel h4 {
-  margin: 0 0 15px 0;
-  color: #333;
-  font-size: 1rem;
-  text-align: center;
-  font-weight: 600;
-}
-
-.theme-colors {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.theme-color-btn {
-  border: none;
-  border-radius: 12px;
-  padding: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  color: white;
-  font-weight: 500;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.theme-color-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+  border-color: #e2e6e0;
 }
 
-.theme-color-btn.active {
-  border: 2px solid #333;
-  transform: scale(1.02);
-}
-
-.theme-name {
-  font-size: 0.85rem;
-}
-
-.theme-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.1);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666;
-  font-size: 0.8rem;
-  transition: all 0.3s ease;
-}
-
-.theme-close:hover {
-  background: rgba(0, 0, 0, 0.2);
-  transform: scale(1.1);
-}
-
-/* ==================== 标题样式 ==================== */
-h2 {
-  text-align: center;
-  margin-bottom: 30px;
-  font-size: 2rem;
-  font-weight: 600;
-  color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-  position: relative;
-  z-index: 1;
-}
-
-h3 {
-  color: white;
-  font-size: 1.3rem;
-  font-weight: 600;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-  margin-bottom: 15px;
-}
-
-/* ==================== 用户信息卡片 ==================== */
+/* 用户信息卡片 */
 .user-info {
-  margin-bottom: 30px;
-  padding: 25px;
+  max-width: 1000px;
+  margin: 0 auto 32px;
+  padding: 28px;
   display: flex;
   align-items: flex-start;
-  gap: 30px;
+  gap: 32px;
   flex-wrap: wrap;
-  border-radius: 16px;
-  position: relative;
-  z-index: 1;
+  border-radius: 28px;
 }
 
 .avatar-section {
@@ -1053,8 +1210,8 @@ h3 {
 
 .avatar-container {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
 }
 
 .avatar {
@@ -1062,13 +1219,12 @@ h3 {
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease;
+  border: 3px solid #efebe6;
+  transition: transform 0.2s;
 }
 
 .avatar:hover {
-  transform: scale(1.05);
+  transform: scale(1.02);
 }
 
 .avatar-upload {
@@ -1079,59 +1235,56 @@ h3 {
   position: absolute;
   bottom: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(5px);
-  color: white;
+  background: #8fc1b0;
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
   border: 2px solid white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .avatar-edit:hover {
-  background: rgba(255, 255, 255, 0.5);
-  transform: scale(1.1);
+  background: #7aa992;
+  transform: scale(1.05);
 }
 
 .edit-icon {
-  font-size: 18px;
+  font-size: 14px;
+  color: white;
 }
 
 .info-content {
   flex: 1;
 }
 
+.info-content h3 {
+  font-size: 18px;
+  font-weight: 500;
+  color: #2c5a4f;
+  margin: 0 0 16px 0;
+}
+
 .info-item {
   display: flex;
   margin-bottom: 12px;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(5px);
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.info-item:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateX(5px);
+  background: #faf8f4;
+  border-radius: 12px;
 }
 
 .label {
-  width: 80px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  width: 70px;
+  font-weight: 500;
+  color: #8b9a8e;
 }
 
 .value {
-  color: white;
-  font-weight: 500;
+  color: #5a6e5c;
 }
 
 /* 二维码区域 */
@@ -1141,9 +1294,10 @@ h3 {
 }
 
 .qrcode-section h3 {
-  margin-bottom: 15px;
-  font-size: 16px;
-  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  color: #5a6e5c;
+  margin: 0 0 12px 0;
 }
 
 .qrcode-container {
@@ -1153,256 +1307,263 @@ h3 {
 }
 
 .user-qrcode {
-  width: 150px;
-  height: 150px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  padding: 10px;
-  background-color: white;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease;
-}
-
-.user-qrcode:hover {
-  transform: scale(1.05);
+  width: 100px;
+  height: 100px;
+  border: 1px solid #efebe6;
+  border-radius: 16px;
+  padding: 8px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
 .qrcode-hint {
-  margin-top: 10px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
-  text-align: center;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #b8c4b0;
 }
 
-/* ==================== 统计信息 ==================== */
+/* 统计信息 */
 .user-stats {
-  margin-bottom: 30px;
-  position: relative;
-  z-index: 1;
+  max-width: 1000px;
+  margin: 0 auto 32px;
 }
 
 .user-stats h3 {
-  margin-bottom: 20px;
-  padding-left: 10px;
-  border-left: 4px solid rgba(255, 255, 255, 0.8);
+  font-size: 18px;
+  font-weight: 500;
+  color: #2c5a4f;
+  margin-bottom: 16px;
+  padding-left: 8px;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
 
 .stat-item {
-  padding: 25px 20px;
-  border-radius: 16px;
+  padding: 20px;
+  border-radius: 20px;
   text-align: center;
 }
 
 .stat-value {
-  font-size: 2rem;
-  font-weight: bold;
-  color: white;
-  margin-bottom: 10px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  font-size: 28px;
+  font-weight: 500;
+  color: #8fc1b0;
+  margin-bottom: 8px;
 }
 
 .stat-label {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 500;
+  font-size: 13px;
+  color: #8b9a8e;
 }
 
-/* ==================== 勋章区域 ==================== */
+/* 勋章区域 */
 .medals {
-  margin-bottom: 30px;
-  position: relative;
-  z-index: 1;
+  max-width: 1000px;
+  margin: 0 auto 32px;
+  padding: 28px;
+  background: white;
+  border-radius: 28px;
+  border: 1px solid #efebe6;
 }
 
 .medals-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-left: 10px;
-  border-left: 4px solid rgba(255, 255, 255, 0.8);
+  margin-bottom: 24px;
 }
 
 .medals-header h3 {
+  font-size: 18px;
+  font-weight: 500;
+  color: #2c5a4f;
   margin: 0;
-  border: none;
-  padding: 0;
 }
 
 .view-all-link {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: white;
+  color: #8fc1b0;
   text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  padding: 8px 16px;
-  border-radius: 30px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
+  font-size: 13px;
+  transition: all 0.2s;
 }
 
 .view-all-link:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateX(2px);
+  gap: 10px;
 }
 
 .arrow-icon {
-  font-size: 16px;
-  transition: transform 0.3s ease;
+  font-size: 14px;
+  transition: transform 0.2s;
 }
 
 .view-all-link:hover .arrow-icon {
   transform: translateX(4px);
 }
 
+/* 加载状态 */
 .loading-state {
   text-align: center;
-  padding: 40px 20px;
-  border-radius: 16px;
+  padding: 40px;
+  border-radius: 20px;
 }
 
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  margin: 0 auto 12px;
-  border: 3px solid rgba(255, 255, 255, 0.2);
-  border-top-color: white;
+.loading-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  background: #8fc1b0;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: bounce 1.4s infinite ease-in-out both;
 }
 
-.loading-state p {
-  color: white;
-  font-size: 0.95rem;
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
 }
 
+/* 勋章列表 */
 .medal-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
 }
 
 .medal-item {
   text-align: center;
-  padding: 20px;
-  border-radius: 16px;
+  padding: 20px 12px;
+  border-radius: 20px;
   cursor: pointer;
+  transition: all 0.2s;
+  background: #faf8f4;
+  border: 1px solid #efebe6;
+}
+
+.medal-item:hover {
+  transform: translateY(-2px);
+  border-color: #e2e6e0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .medal-icon {
-  font-size: 3rem;
-  margin-bottom: 15px;
-  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.2));
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+  font-size: 40px;
+  margin-bottom: 12px;
 }
 
 .medal-name {
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: white;
-  font-size: 1rem;
+  font-weight: 500;
+  font-size: 14px;
+  color: #5a6e5c;
+  margin-bottom: 6px;
 }
 
 .medal-desc {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 15px;
-  line-height: 1.4;
+  font-size: 11px;
+  color: #b8c4b0;
+  margin-bottom: 12px;
 }
 
 .medal-progress {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .progress-bar {
   width: 100%;
-  height: 6px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
+  height: 4px;
+  background: #efebe6;
+  border-radius: 2px;
   overflow: hidden;
-  margin-bottom: 5px;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4CAF50, #8BC34A);
-  border-radius: 3px;
-  transition: width 0.3s ease;
+  background: #8fc1b0;
+  border-radius: 2px;
+  transition: width 0.3s;
 }
 
 .progress-text {
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 10px;
+  color: #b8c4b0;
+  margin-top: 4px;
 }
 
 .empty-medals {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 40px 20px;
-  border-radius: 16px;
-  color: white;
+  padding: 40px;
+  border-radius: 20px;
+  color: #b8c4b0;
 }
 
 .empty-hint {
-  font-size: 0.8rem;
-  margin-top: 10px;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  margin-top: 8px;
+  color: #cbd5c7;
 }
 
-/* ==================== 当前借阅 ==================== */
+/* 当前借阅 */
 .borrowed-books {
-  margin-bottom: 30px;
-  position: relative;
-  z-index: 1;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 28px;
+  background: white;
+  border-radius: 28px;
+  border: 1px solid #efebe6;
 }
 
 .borrowed-books h3 {
+  font-size: 18px;
+  font-weight: 500;
+  color: #2c5a4f;
   margin-bottom: 20px;
-  padding-left: 10px;
-  border-left: 4px solid rgba(255, 255, 255, 0.8);
 }
 
 .book-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .book-item {
   display: flex;
-  gap: 15px;
-  padding: 15px;
-  border-radius: 12px;
+  gap: 16px;
+  padding: 16px;
+  background: #faf8f4;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+
+.book-item:hover {
+  transform: translateX(4px);
 }
 
 .book-cover, .book-cover-placeholder {
-  width: 80px;
-  height: 100px;
+  width: 60px;
+  height: 80px;
   flex-shrink: 0;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #efebe6;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 24px;
+  font-size: 28px;
 }
 
 .book-cover img {
@@ -1413,127 +1574,108 @@ h3 {
 
 .book-info {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
 }
 
 .book-info h4 {
-  margin: 0;
   font-size: 16px;
-  font-weight: 600;
-  color: white;
+  font-weight: 500;
+  color: #2c5a4f;
+  margin: 0 0 4px 0;
 }
 
 .book-author {
-  margin: 0;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  color: #8b9a8e;
+  margin: 0 0 8px 0;
 }
 
 .borrow-date, .due-date {
-  margin: 0;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  color: #b8c4b0;
+  margin: 2px 0;
 }
 
 .due-date {
-  color: #ff9800;
-  font-weight: 500;
-}
-
-.return-btn {
-  align-self: flex-end;
-  padding: 8px 16px;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.return-btn:hover {
-  background-color: #d32f2f;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  color: #e8a4a4;
 }
 
 .empty-books {
-  grid-column: 1 / -1;
   text-align: center;
   padding: 40px;
-  border-radius: 16px;
-  color: white;
+  border-radius: 20px;
+  color: #b8c4b0;
 }
 
-/* 弹窗样式保持不变 */
+/* 弹窗样式 */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
-  animation: fadeIn 0.2s ease;
-  backdrop-filter: blur(5px);
+  z-index: 1000;
+  backdrop-filter: blur(4px);
 }
 
 .modal-container {
   background: white;
-  border-radius: 24px;
+  border-radius: 28px;
   width: 90%;
-  max-width: 400px;
-  max-height: 90vh;
+  max-width: 420px;
+  max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.3s ease;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  animation: modalSlideUp 0.3s ease;
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #eee;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 24px 24px 0 0;
+  padding: 24px 28px;
+  border-bottom: 1px solid #efebe6;
 }
 
 .modal-header h3 {
   margin: 0;
-  color: white;
-  font-size: 1.3rem;
-  font-weight: 600;
-  border: none;
-  padding: 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: #2c5a4f;
 }
 
 .close-btn {
-  background: rgba(255, 255, 255, 0.2);
+  background: none;
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: white;
+  color: #b8c4b0;
+  transition: color 0.2s;
   width: 32px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: all 0.2s;
 }
 
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.1);
+  color: #e8a4a4;
+  background: #fef0ec;
 }
 
 .modal-content {
@@ -1542,34 +1684,23 @@ h3 {
 }
 
 .modal-medal-icon {
-  font-size: 5rem;
+  font-size: 64px;
   margin-bottom: 16px;
-  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
-}
-
-.modal-medal-icon.unlocked {
-  animation: modalPulse 2s infinite;
-}
-
-@keyframes modalPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
 }
 
 .modal-medal-name {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #2c3e50;
+  font-size: 22px;
+  font-weight: 500;
+  color: #2c5a4f;
   margin-bottom: 8px;
 }
 
 .modal-medal-desc {
-  font-size: 1rem;
-  color: #666;
+  font-size: 14px;
+  color: #8b9a8e;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #efebe6;
 }
 
 .requirement-section {
@@ -1578,44 +1709,86 @@ h3 {
 }
 
 .requirement-section h4 {
-  color: #2c3e50;
-  font-size: 1rem;
-  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5a6e5c;
+  margin-bottom: 8px;
 }
 
 .requirement-item {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
-  padding: 12px 16px;
+  background: #faf8f4;
+  padding: 10px 14px;
   border-radius: 12px;
 }
 
 .requirement-label {
-  color: #4CAF50;
-  font-size: 0.9rem;
-  line-height: 1.5;
+  font-size: 13px;
+  color: #8fc1b0;
+}
+
+.progress-section {
+  margin-bottom: 20px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #b8c4b0;
+  margin-bottom: 8px;
+}
+
+.status-section {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 20px;
+  border-radius: 40px;
+  font-size: 13px;
   font-weight: 500;
 }
 
-/* 动画 */
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.status-badge.unlocked {
+  background: #e8f0ec;
+  color: #8fc1b0;
 }
 
-/* 响应式设计 */
+.status-badge.locked {
+  background: #efebe6;
+  color: #b8c4b0;
+}
+
+.hint-text {
+  font-size: 12px;
+  color: #b8c4b0;
+  margin-top: 12px;
+}
+
+.unlock-time {
+  font-size: 12px;
+  color: #8fc1b0;
+  margin-top: 12px;
+}
+
+/* 响应式 */
 @media (max-width: 768px) {
-  .theme-switcher {
-    top: 10px;
-    right: 10px;
+  .user-center {
+    padding: 20px 16px;
   }
   
-  .theme-panel {
-    width: 250px;
+  h2 {
+    font-size: 24px;
+    margin-bottom: 24px;
   }
   
   .user-info {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    padding: 24px;
   }
   
   .info-item {
@@ -1624,25 +1797,160 @@ h3 {
   
   .label {
     width: auto;
-    margin-right: 10px;
+    margin-right: 8px;
   }
   
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .medal-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
   
   .book-list {
-    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .book-item {
+    flex-wrap: wrap;
   }
 }
 
 @media (max-width: 480px) {
-  .theme-colors {
-    grid-template-columns: 1fr;
-  }
-  
   .medal-grid {
     grid-template-columns: 1fr;
   }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .medals, .borrowed-books, .user-info {
+    padding: 20px;
+  }
+}
+
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.info-header h3 {
+  margin: 0;
+}
+
+.edit-info-btn {
+  background: rgba(47, 199, 133, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgb(16, 12, 12);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-info-btn:hover {
+  background: rgba(36, 35, 35, 0.3);
+  transform: translateY(-1px);
+}
+
+.change-pwd-btn {
+  background: none;
+  border: 1px solid rgba(81, 184, 124, 0.3);
+  color: rgba(202, 17, 17, 0.8);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.change-pwd-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #ff9800;
+  color: #ff9800;
+}
+.modal-body {
+  padding: 32px 32px 24px 32px;  /* 上 右 下 左，全部增加到32px */
+}
+/* 弹窗内表单 */
+.modal-body .form-group {
+  margin-bottom: 20px;
+}
+
+.modal-body label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #5a6e5c;
+  font-size: 14px;
+}
+
+.modal-body .required {
+  color: #e8a4a4;
+}
+
+.modal-body input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #e2e6e0;
+  border-radius: 12px;
+  font-size: 14px;
+  box-sizing: border-box;
+  background: white;
+}
+
+.modal-body input:focus {
+  outline: none;
+  border-color: #8fc1b0;
+}
+
+.error-hint {
+  display: block;
+  font-size: 12px;
+  color: #e8a4a4;
+  margin-top: 4px;
+}
+
+.btn-cancel {
+  background: none;
+  border: 1px solid #e2e6e0;
+  padding: 8px 20px;
+  border-radius: 30px;
+  color: #8b9a8e;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+  border-color: #8fc1b0;
+  color: #8fc1b0;
+}
+
+.btn-save {
+  background: #8fc1b0;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 30px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-save:hover:not(:disabled) {
+  background: #7aa992;
+}
+
+.btn-save:disabled {
+  background: #e2e6e0;
+  cursor: not-allowed;
 }
 </style>

@@ -1,5 +1,10 @@
 <template>
   <div class="borrow-book">
+    <div class="back-nav">
+      <router-link to="/" class="back-link">
+        <span class="back-arrow">←</span> 返回首页
+      </router-link>
+    </div>
     <h2>认领书籍</h2>
     
     <!-- 步骤条 -->
@@ -1281,48 +1286,115 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 样式保持不变，与之前相同 */
+/* ==================== 清新风格样式 ==================== */
 .borrow-book {
   max-width: 900px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #f5f7fa;
+  background: #faf8f4;
   min-height: calc(100vh - 40px);
+}
+
+/* 返回按钮样式 */
+.back-nav {
+  margin-bottom: 20px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8b9a8e;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #8fc1b0;
+}
+
+.back-arrow {
+  font-size: 16px;
 }
 
 h2 {
   text-align: center;
   margin-bottom: 20px;
-  color: #303133;
+  color: #2c5a4f;
   font-weight: 500;
+  font-size: 28px;
 }
 
 .step-content {
   margin-top: 20px;
 }
 
+/* 卡片样式 - 清新圆角 */
+:deep(.el-card) {
+  border-radius: 24px !important;
+  border: 1px solid #efebe6 !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02) !important;
+  background: white;
+}
+
+:deep(.el-card__header) {
+  border-bottom: 1px solid #efebe6;
+  padding: 16px 20px;
+  background: white;
+  border-radius: 24px 24px 0 0;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .header-title {
   font-size: 18px;
   font-weight: 500;
-  color: #303133;
+  color: #2c5a4f;
 }
 
+/* 模式切换按钮 - 清新风格 */
 .mode-switch {
   display: flex;
   justify-content: center;
   margin-bottom: 30px;
 }
 
-.mode-switch .el-radio-button {
-  margin: 0 10px;
+:deep(.el-radio-group) {
+  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
+:deep(.el-radio-button__inner) {
+  border-radius: 40px !important;
+  padding: 8px 20px;
+  border: 1px solid #e2e6e0;
+  background: white;
+  color: #8b9a8e;
+  transition: all 0.2s;
+}
+
+:deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+  background: #8fc1b0;
+  border-color: #8fc1b0;
+  color: white;
+  box-shadow: none;
+}
+
+:deep(.el-radio-button__inner:hover) {
+  border-color: #8fc1b0;
+  color: #8fc1b0;
+}
+
+/* 摄像头区域 */
 .camera-mode {
   display: flex;
   flex-direction: column;
@@ -1337,13 +1409,12 @@ h2 {
 .camera-container {
   width: 100%;
   height: 350px;
-  background: #1a1a1a;
-  border-radius: 12px;
+  background: #2c5a4f;
+  border-radius: 20px;
   overflow: hidden;
   position: relative;
-  border: 2px solid #409EFF;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   margin-bottom: 15px;
+  border: 1px solid #e2e6e0;
 }
 
 .scanner-video {
@@ -1363,16 +1434,17 @@ h2 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #2c3e50;
+  background: #2c5a4f;
   color: white;
 }
 
 .placeholder-text {
   font-size: 16px;
   opacity: 0.9;
-  color: #ecf0f1;
+  margin-top: 12px;
 }
 
+/* 扫描框 */
 .scan-frame {
   position: absolute;
   top: 50%;
@@ -1387,9 +1459,8 @@ h2 {
   position: absolute;
   width: 30px;
   height: 30px;
-  border-color: #409EFF;
+  border-color: #8fc1b0;
   border-style: solid;
-  filter: drop-shadow(0 0 5px rgba(64,158,255,0.5));
 }
 
 .scan-corner.top-left {
@@ -1422,7 +1493,7 @@ h2 {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #409EFF, transparent);
+  background: linear-gradient(90deg, transparent, #8fc1b0, transparent);
   animation: scan 2s linear infinite;
 }
 
@@ -1441,7 +1512,7 @@ h2 {
 
 .select-label {
   font-size: 14px;
-  color: #606266;
+  color: #5a6e5c;
 }
 
 .camera-controls {
@@ -1450,6 +1521,7 @@ h2 {
   margin-top: 10px;
 }
 
+/* 上传区域 */
 .upload-mode {
   padding: 20px 0;
 }
@@ -1459,21 +1531,32 @@ h2 {
   margin-bottom: 20px;
 }
 
+:deep(.el-upload-dragger) {
+  border: 2px dashed #e2e6e0 !important;
+  border-radius: 20px !important;
+  background: #faf8f4 !important;
+  transition: all 0.2s;
+}
+
+:deep(.el-upload-dragger:hover) {
+  border-color: #8fc1b0 !important;
+}
+
 .upload-icon {
   font-size: 48px;
-  color: #909399;
+  color: #b8c4b0;
   margin-bottom: 10px;
 }
 
 .upload-text {
   font-size: 16px;
-  color: #606266;
+  color: #5a6e5c;
   margin-bottom: 5px;
 }
 
 .upload-hint {
   font-size: 12px;
-  color: #909399;
+  color: #b8c4b0;
 }
 
 .preview-area {
@@ -1486,8 +1569,8 @@ h2 {
 .preview-image {
   max-width: 300px;
   max-height: 300px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
+  border-radius: 12px;
+  border: 1px solid #efebe6;
   object-fit: contain;
 }
 
@@ -1496,58 +1579,72 @@ h2 {
   gap: 10px;
 }
 
+/* 手动输入 */
 .manual-mode {
   padding: 30px;
   max-width: 400px;
   margin: 0 auto;
 }
 
+/* 扫描状态 */
 .scan-status {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px;
-  border-radius: 4px;
+  padding: 12px;
+  border-radius: 40px;
   margin-top: 20px;
   font-size: 14px;
 }
 
 .status-success {
-  background-color: #f0f9eb;
-  color: #67C23A;
+  background-color: #e8f0ec;
+  color: #8fc1b0;
 }
 
 .status-error {
-  background-color: #fef0f0;
-  color: #F56C6C;
+  background-color: #fef0ec;
+  color: #e8a4a4;
 }
 
 .status-scanning {
-  background-color: #ecf5ff;
-  color: #409EFF;
+  background-color: #f5f0e8;
+  color: #c9b6a0;
 }
 
+/* 用户确认卡片 */
 .user-confirm-card {
   margin-bottom: 20px;
 }
 
+:deep(.el-alert) {
+  border-radius: 16px;
+  background: #e8f0ec;
+  border: none;
+}
+
+:deep(.el-alert__title) {
+  color: #2c5a4f;
+}
+
+/* 书籍信息卡片 */
 .book-info-card {
   display: flex;
   gap: 20px;
   margin-bottom: 20px;
-  padding: 15px;
-  background-color: #f5f7fa;
-  border-radius: 8px;
+  padding: 16px;
+  background: #faf8f4;
+  border-radius: 20px;
 }
 
 .book-cover {
   width: 100px;
   height: 140px;
   flex-shrink: 0;
-  border-radius: 4px;
+  border-radius: 12px;
   overflow: hidden;
-  background-color: #e0e0e0;
+  background: #efebe6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1568,50 +1665,76 @@ h2 {
 }
 
 .book-title {
-  margin: 0 0 10px;
-  font-size: 20px;
-  color: #303133;
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 500;
+  color: #2c5a4f;
 }
 
 .book-author {
   margin: 5px 0;
-  color: #606266;
+  color: #8b9a8e;
+  font-size: 14px;
 }
 
 .book-isbn {
   margin: 5px 0;
-  color: #909399;
-  font-size: 14px;
+  color: #b8c4b0;
+  font-size: 13px;
 }
 
 .book-tags {
   margin-top: 10px;
 }
 
+/* 用户信息卡片 */
 .user-info-card {
   margin-bottom: 20px;
-  padding: 15px;
-  background-color: #f5f7fa;
-  border-radius: 8px;
+  padding: 16px;
+  background: #faf8f4;
+  border-radius: 20px;
 }
 
 .user-info-card h4 {
-  margin: 0 0 15px;
-  color: #303133;
+  margin: 0 0 12px;
+  color: #5a6e5c;
+  font-size: 15px;
+  font-weight: 500;
 }
 
+:deep(.el-descriptions) {
+  background: transparent;
+}
+
+:deep(.el-descriptions__label) {
+  color: #b8c4b0;
+  font-weight: normal;
+}
+
+:deep(.el-descriptions__content) {
+  color: #5a6e5c;
+}
+
+/* 表单 */
 .borrow-form {
   margin-top: 20px;
 }
 
 .form-tip {
   font-size: 12px;
-  color: #909399;
+  color: #b8c4b0;
   margin-top: 5px;
 }
 
 .period-selector {
   width: 100%;
+}
+
+/* 按钮样式 - 清新风格 */
+.step-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }
 
 .form-actions {
@@ -1621,12 +1744,45 @@ h2 {
   margin-top: 30px;
 }
 
-.step-actions {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
+:deep(.el-button--primary) {
+  background: #8fc1b0;
+  border-color: #8fc1b0;
+  border-radius: 40px;
+  padding: 10px 24px;
 }
 
+:deep(.el-button--primary:hover) {
+  background: #7aa992;
+  border-color: #7aa992;
+}
+
+:deep(.el-button--default) {
+  border-radius: 40px;
+  border-color: #e2e6e0;
+  color: #8b9a8e;
+}
+
+:deep(.el-button--default:hover) {
+  border-color: #8fc1b0;
+  color: #8fc1b0;
+}
+
+:deep(.el-button--danger) {
+  border-radius: 40px;
+}
+
+:deep(.el-button--success) {
+  background: #e8f0ec;
+  border-color: #e8f0ec;
+  color: #8fc1b0;
+  border-radius: 40px;
+}
+
+:deep(.el-button--success:hover) {
+  background: #dde9e2;
+}
+
+/* 成功弹窗 */
 .success-content {
   text-align: center;
   padding: 20px;
@@ -1635,9 +1791,9 @@ h2 {
 .success-icon {
   width: 60px;
   height: 60px;
-  background: #67C23A;
+  background: #8fc1b0;
   color: white;
-  font-size: 36px;
+  font-size: 32px;
   line-height: 60px;
   border-radius: 50%;
   margin: 0 auto 20px;
@@ -1645,14 +1801,16 @@ h2 {
 
 .success-content h3 {
   margin: 10px 0;
-  color: #303133;
+  color: #2c5a4f;
+  font-weight: 500;
 }
 
 .success-content p {
   margin: 5px 0;
-  color: #606266;
+  color: #6c826e;
 }
 
+/* 响应式 */
 @media (max-width: 768px) {
   .borrow-book {
     padding: 10px;
@@ -1667,8 +1825,9 @@ h2 {
     height: 200px;
   }
   
-  .mode-switch .el-radio-button {
-    margin: 0 5px;
+  :deep(.el-radio-button__inner) {
+    padding: 6px 14px;
+    font-size: 13px;
   }
   
   .book-info-card {

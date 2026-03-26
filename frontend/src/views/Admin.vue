@@ -1,5 +1,12 @@
 <template>
   <div class="admin">
+    <!-- 添加返回按钮 -->
+    <div class="back-nav">
+      <router-link to="/" class="back-link">
+        <span class="back-arrow">←</span> 返回首页
+      </router-link>
+    </div>
+
     <h2>管理员中心</h2>
     <div class="admin-nav">
       <button @click="activeTab = 'users'" :class="{ active: activeTab === 'users' }">用户管理</button>
@@ -10,7 +17,9 @@
     <div class="admin-content">
       <!-- 加载状态 -->
       <div v-if="loading" class="loading-container">
-        <div class="loading-spinner"></div>
+        <div class="loading-dots">
+          <span></span><span></span><span></span>
+        </div>
         <p>加载中...</p>
       </div>
       
@@ -24,47 +33,49 @@
             placeholder="搜索用户名/学号"
             @keyup.enter="searchUsers"
           >
-          <button class="btn" @click="searchUsers">搜索</button>
-          <button class="btn reset-btn" @click="resetSearch">重置</button>
+          <button class="btn btn-primary" @click="searchUsers">搜索</button>
+          <button class="btn btn-outline" @click="resetSearch">重置</button>
         </div>
-        <table class="user-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>学号</th>
-              <th>姓名</th>
-              <th>手机号</th>
-              <th>邮箱</th>
-              <th>角色</th>
-              <th>借阅数</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="user in users" :key="user.id">
-              <td>{{ user.id }}</td>
-              <td>{{ user.studentId }}</td>
-              <td>{{ user.name }}</td>
-              <td>{{ user.phone || '-' }}</td>
-              <td>{{ user.email || '-' }}</td>
-              <td>
-                <select v-model="user.role" @change="updateUserRole(user)" :disabled="user.id === currentUserId">
-                  <option value="user">普通用户</option>
-                  <option value="admin">管理员</option>
-                </select>
-              </td>
-              <td>{{ user.borrowedCount || 0 }}本</td>
-              <td>
-                <button class="btn delete-btn" @click="deleteUser(user)" :disabled="user.id === currentUserId">
-                  删除
-                </button>
-              </td>
-            </tr>
-            <tr v-if="users.length === 0">
-              <td colspan="8" class="empty-data">暂无用户数据</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>学号</th>
+                <th>姓名</th>
+                <th>手机号</th>
+                <th>邮箱</th>
+                <th>角色</th>
+                <th>借阅数</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="user in users" :key="user.id">
+                <td>{{ user.id }}</td>
+                <td>{{ user.studentId }}</td>
+                <td>{{ user.name }}</td>
+                <td>{{ user.phone || '-' }}</td>
+                <td>{{ user.email || '-' }}</td>
+                <td>
+                  <select v-model="user.role" @change="updateUserRole(user)" :disabled="user.id === currentUserId" class="role-select">
+                    <option value="user">普通用户</option>
+                    <option value="admin">管理员</option>
+                  </select>
+                </td>
+                <td>{{ user.borrowedCount || 0 }}本</td>
+                <td>
+                  <button class="btn btn-danger" @click="deleteUser(user)" :disabled="user.id === currentUserId">
+                    删除
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="users.length === 0">
+                <td colspan="8" class="empty-data">暂无用户数据</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
       
       <!-- 书籍管理 -->
@@ -77,49 +88,51 @@
             placeholder="搜索书名/作者/ISBN"
             @keyup.enter="searchBooks"
           >
-          <button class="btn" @click="searchBooks">搜索</button>
-          <button class="btn reset-btn" @click="resetSearch">重置</button>
+          <button class="btn btn-primary" @click="searchBooks">搜索</button>
+          <button class="btn btn-outline" @click="resetSearch">重置</button>
         </div>
-        <table class="book-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>书名</th>
-              <th>作者</th>
-              <th>ISBN</th>
-              <th>出版社</th>
-              <th>状态</th>
-              <th>捐赠人</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="book in books" :key="book.id">
-              <td>{{ book.id }}</td>
-              <td>
-                <router-link :to="`/book/${book.id}`" class="book-link">
-                  {{ book.title }}
-                </router-link>
-              </td>
-              <td>{{ book.author }}</td>
-              <td>{{ book.isbn || '-' }}</td>
-              <td>{{ book.publisher || '-' }}</td>
-              <td>
-                <span :class="['status-badge', book.status]">
-                  {{ book.status === 'available' ? '可认领' : '已借出' }}
-                </span>
-              </td>
-              <td>{{ book.donorName || '匿名' }}</td>
-              <td>
-                <button class="btn edit-btn" @click="editBook(book)">编辑</button>
-                <button class="btn delete-btn" @click="deleteBook(book)">删除</button>
-              </td>
-            </tr>
-            <tr v-if="books.length === 0">
-              <td colspan="8" class="empty-data">暂无书籍数据</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>书名</th>
+                <th>作者</th>
+                <th>ISBN</th>
+                <th>出版社</th>
+                <th>状态</th>
+                <th>捐赠人</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="book in books" :key="book.id">
+                <td>{{ book.id }}</td>
+                <td>
+                  <router-link :to="`/book/${book.id}`" class="book-link">
+                    {{ book.title }}
+                  </router-link>
+                </td>
+                <td>{{ book.author }}</td>
+                <td>{{ book.isbn || '-' }}</td>
+                <td>{{ book.publisher || '-' }}</td>
+                <td>
+                  <span :class="['status-badge', book.status]">
+                    {{ book.status === 'available' ? '可认领' : '已借出' }}
+                  </span>
+                </td>
+                <td>{{ book.donorName || '匿名' }}</td>
+                <td>
+                  <button class="btn btn-edit" @click="editBook(book)">编辑</button>
+                  <button class="btn btn-danger" @click="deleteBook(book)">删除</button>
+                </td>
+              </tr>
+              <tr v-if="books.length === 0">
+                <td colspan="8" class="empty-data">暂无书籍数据</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         
         <!-- 编辑书籍弹窗 -->
         <div v-if="editDialogVisible" class="modal-overlay" @click="closeEditDialog">
@@ -167,8 +180,8 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn cancel-btn" @click="closeEditDialog">取消</button>
-              <button class="btn save-btn" @click="saveBookEdit">保存</button>
+              <button class="btn btn-outline" @click="closeEditDialog">取消</button>
+              <button class="btn btn-primary" @click="saveBookEdit">保存</button>
             </div>
           </div>
         </div>
@@ -208,7 +221,6 @@
     </div>
   </div>
 </template>
-
 <script>
 import axios from 'axios'
 
@@ -429,7 +441,8 @@ export default {
         publisher: book.publisher || '',
         description: book.description || '',
         status: book.status,
-        condition: book.condition || 'normal'
+        condition: book.condition || 'normal',
+        coverUrl: book.coverUrl || ''
       }
       this.editDialogVisible = true
     },
@@ -464,6 +477,11 @@ export default {
           this.$message?.success('更新成功')
           this.closeEditDialog()
           this.loadBooks()
+
+          // 触发全局事件，通知其他组件书籍状态已变化
+      window.dispatchEvent(new CustomEvent('book-status-changed', {
+        detail: { bookId: this.editForm.id, status: this.editForm.status }
+      }))
         } else {
           this.$message?.error(response.data.message || '更新失败')
         }
@@ -531,138 +549,235 @@ export default {
 </script>
 
 <style scoped>
+/* ==================== 清新风格样式 ==================== */
 .admin {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 32px 24px;
+  background: #faf8f4;
+  min-height: calc(100vh - 60px);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* 返回按钮样式 */
+.back-nav {
+  margin-bottom: 24px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8b9a8e;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #8fc1b0;
+}
+
+.back-arrow {
+  font-size: 16px;
 }
 
 h2 {
   text-align: center;
-  margin-bottom: 30px;
-  color: #333;
+  font-size: 28px;
+  font-weight: 500;
+  color: #2c5a4f;
+  margin-bottom: 28px;
 }
 
+/* 导航标签 */
 .admin-nav {
   display: flex;
-  margin-bottom: 30px;
-  border-bottom: 1px solid #ddd;
+  justify-content: center;
+  margin-bottom: 32px;
+  gap: 8px;
+  border-bottom: none;
 }
 
 .admin-nav button {
-  padding: 10px 20px;
+  padding: 10px 28px;
   border: none;
   background: none;
   cursor: pointer;
-  font-size: 16px;
-  color: #666;
-  border-bottom: 2px solid transparent;
-  transition: all 0.3s;
+  font-size: 15px;
+  color: #8b9a8e;
+  border-radius: 40px;
+  transition: all 0.2s;
+  font-weight: 500;
 }
 
 .admin-nav button:hover {
-  color: #4CAF50;
+  color: #8fc1b0;
+  background: #f5f0e8;
 }
 
 .admin-nav button.active {
-  color: #4CAF50;
-  border-bottom-color: #4CAF50;
+  color: white;
+  background: #8fc1b0;
+  border-bottom: none;
 }
 
 .admin-content {
   min-height: 400px;
 }
 
-.search-bar {
+/* 标题 */
+h3 {
+  font-size: 20px;
+  font-weight: 500;
+  color: #2c5a4f;
   margin-bottom: 20px;
+}
+
+/* 搜索栏 */
+.search-bar {
+  margin-bottom: 24px;
   display: flex;
-  gap: 10px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .search-bar input {
   flex: 1;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 10px 16px;
+  border: 1px solid #e2e6e0;
+  border-radius: 40px;
   font-size: 14px;
+  background: white;
+  transition: all 0.2s;
 }
 
+.search-bar input:focus {
+  outline: none;
+  border-color: #8fc1b0;
+  box-shadow: 0 0 0 3px rgba(143, 193, 176, 0.1);
+}
+
+/* 按钮样式 */
 .btn {
-  padding: 10px 20px;
+  padding: 8px 20px;
   border: none;
-  border-radius: 4px;
+  border-radius: 40px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.3s;
+  font-weight: 500;
+  transition: all 0.2s;
 }
 
-.edit-btn {
-  background-color: #2196F3;
-  color: white;
-  margin-right: 10px;
-}
-
-.edit-btn:hover {
-  background-color: #0b7dda;
-}
-
-.delete-btn {
-  background-color: #f44336;
+.btn-primary {
+  background: #8fc1b0;
   color: white;
 }
 
-.delete-btn:hover {
-  background-color: #d32f2f;
+.btn-primary:hover {
+  background: #7aa992;
+  transform: translateY(-1px);
 }
 
-.delete-btn:disabled {
-  background-color: #ccc;
+.btn-outline {
+  background: white;
+  border: 1px solid #e2e6e0;
+  color: #8b9a8e;
+}
+
+.btn-outline:hover {
+  border-color: #8fc1b0;
+  color: #8fc1b0;
+}
+
+.btn-edit {
+  background: #e8f0ec;
+  color: #8fc1b0;
+  margin-right: 8px;
+}
+
+.btn-edit:hover {
+  background: #dde9e2;
+}
+
+.btn-danger {
+  background: #fef0ec;
+  color: #e8a4a4;
+}
+
+.btn-danger:hover {
+  background: #fce8e2;
+  color: #e09494;
+}
+
+.btn-danger:disabled {
+  background: #efebe6;
+  color: #cbd5c7;
   cursor: not-allowed;
 }
 
-.reset-btn {
-  background-color: #ff9800;
-  color: white;
+/* 表格样式 */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 20px;
+  border: 1px solid #efebe6;
+  background: white;
 }
 
-.reset-btn:hover {
-  background-color: #fb8c00;
-}
-
-.user-table, .book-table {
+.data-table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 14px;
 }
 
-.user-table th, .book-table th {
-  background-color: #f2f2f2;
-  padding: 12px;
+.data-table th {
+  background: #faf8f4;
+  padding: 14px 16px;
   text-align: left;
-  font-weight: bold;
-  color: #333;
-  border-bottom: 2px solid #ddd;
+  font-weight: 500;
+  color: #5a6e5c;
+  border-bottom: 1px solid #efebe6;
 }
 
-.user-table td, .book-table td {
-  padding: 12px;
-  border-bottom: 1px solid #ddd;
+.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #efebe6;
+  color: #6c826e;
 }
 
-.user-table tr:hover, .book-table tr:hover {
-  background-color: #f5f5f5;
+.data-table tr:hover {
+  background: #faf8f4;
 }
 
-.empty-data {
-  text-align: center;
-  color: #999;
-  padding: 40px !important;
+.data-table tr:last-child td {
+  border-bottom: none;
 }
 
+/* 角色选择框 */
+.role-select {
+  padding: 6px 10px;
+  border: 1px solid #e2e6e0;
+  border-radius: 20px;
+  background: white;
+  font-size: 13px;
+  color: #5a6e5c;
+  cursor: pointer;
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: #8fc1b0;
+}
+
+.role-select:disabled {
+  background: #efebe6;
+  cursor: not-allowed;
+}
+
+/* 书籍链接 */
 .book-link {
-  color: #4CAF50;
+  color: #8fc1b0;
   text-decoration: none;
 }
 
@@ -670,88 +785,126 @@ h2 {
   text-decoration: underline;
 }
 
+/* 状态标签 */
 .status-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 4px 12px;
+  border-radius: 30px;
   font-size: 12px;
+  font-weight: 500;
 }
 
 .status-badge.available {
-  background-color: #d4edda;
-  color: #155724;
+  background: #e8f0ec;
+  color: #8fc1b0;
 }
 
 .status-badge.borrowed {
-  background-color: #f8d7da;
-  color: #721c24;
+  background: #fef0ec;
+  color: #e8a4a4;
+}
+
+.empty-data {
+  text-align: center;
+  color: #b8c4b0;
+  padding: 48px !important;
+}
+
+/* 统计卡片 */
+.statistics-tab {
+  background: white;
+  border-radius: 28px;
+  padding: 24px;
+  border: 1px solid #efebe6;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 32px;
 }
 
 .stat-card {
-  background-color: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
+  background: #faf8f4;
+  padding: 24px 20px;
+  border-radius: 20px;
   text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s;
+  transition: all 0.2s;
+  border: 1px solid #efebe6;
 }
 
 .stat-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-2px);
+  border-color: #e2e6e0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .stat-value {
   font-size: 32px;
-  font-weight: bold;
-  color: #4CAF50;
-  margin-bottom: 10px;
+  font-weight: 500;
+  color: #8fc1b0;
+  margin-bottom: 8px;
 }
 
 .stat-label {
-  font-size: 14px;
-  color: #666;
+  font-size: 13px;
+  color: #8b9a8e;
 }
 
 .refresh-btn {
   display: block;
   margin: 0 auto;
-  padding: 10px 24px;
-  background-color: #4CAF50;
+  padding: 10px 32px;
+  background: #8fc1b0;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 40px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
 }
 
 .refresh-btn:hover {
-  background-color: #45a049;
+  background: #7aa992;
+  transform: translateY(-1px);
 }
 
+/* 加载状态 */
 .loading-container {
   text-align: center;
-  padding: 40px;
+  padding: 60px;
+  background: white;
+  border-radius: 28px;
+  border: 1px solid #efebe6;
 }
 
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  margin: 0 auto 10px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #4CAF50;
+.loading-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  background: #8fc1b0;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: bounce 1.4s infinite ease-in-out both;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+.loading-container p {
+  color: #b8c4b0;
+  font-size: 14px;
 }
 
 /* 弹窗样式 */
@@ -761,34 +914,49 @@ h2 {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(4px);
 }
 
 .modal-container {
   background-color: white;
-  border-radius: 8px;
+  border-radius: 28px;
   width: 90%;
   max-width: 500px;
-  max-height: 80vh;
+  max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  animation: modalSlideUp 0.3s ease;
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
-  border-bottom: 1px solid #eee;
+  padding: 20px 24px;
+  border-bottom: 1px solid #efebe6;
 }
 
 .modal-header h3 {
   margin: 0;
-  color: #333;
+  font-size: 18px;
+  font-weight: 500;
+  color: #2c5a4f;
 }
 
 .close-btn {
@@ -796,98 +964,115 @@ h2 {
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #999;
+  color: #b8c4b0;
+  transition: all 0.2s;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
 }
 
 .close-btn:hover {
-  color: #333;
+  color: #e8a4a4;
+  background: #fef0ec;
 }
 
 .modal-body {
-  padding: 20px;
+  padding: 24px;
 }
 
 .modal-body .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .modal-body label {
   display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #555;
-  font-size: 14px;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #5a6e5c;
+  font-size: 13px;
 }
 
 .modal-body input,
 .modal-body select,
 .modal-body textarea {
   width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 10px 14px;
+  border: 1px solid #e2e6e0;
+  border-radius: 12px;
   font-size: 14px;
   box-sizing: border-box;
+  background: white;
+  transition: all 0.2s;
 }
 
 .modal-body input:focus,
 .modal-body select:focus,
 .modal-body textarea:focus {
   outline: none;
-  border-color: #4CAF50;
+  border-color: #8fc1b0;
+  box-shadow: 0 0 0 3px rgba(143, 193, 176, 0.1);
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  padding: 15px 20px;
-  border-top: 1px solid #eee;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #efebe6;
 }
 
-.cancel-btn {
-  background-color: #f5f5f5;
-  color: #666;
-}
-
-.cancel-btn:hover {
-  background-color: #e0e0e0;
-}
-
-.save-btn {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.save-btn:hover {
-  background-color: #45a049;
-}
-
+/* 响应式 */
 @media (max-width: 768px) {
   .admin {
-    padding: 15px;
+    padding: 20px 16px;
+  }
+  
+  h2 {
+    font-size: 24px;
+  }
+  
+  .admin-nav {
+    flex-wrap: wrap;
+    gap: 8px;
   }
   
   .admin-nav button {
-    padding: 8px 12px;
+    padding: 8px 20px;
     font-size: 14px;
-  }
-  
-  .user-table, .book-table {
-    font-size: 12px;
-  }
-  
-  .user-table th, .book-table th,
-  .user-table td, .book-table td {
-    padding: 8px;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
   }
   
   .search-bar {
     flex-direction: column;
+  }
+  
+  .search-bar input,
+  .search-bar .btn {
+    width: 100%;
+  }
+  
+  .data-table {
+    font-size: 12px;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 10px 12px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .stat-card {
+    padding: 16px;
+  }
+  
+  .stat-value {
+    font-size: 24px;
   }
   
   .modal-container {
@@ -898,6 +1083,16 @@ h2 {
 @media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .admin-nav button {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .btn-edit, .btn-danger {
+    margin-bottom: 4px;
+    display: inline-block;
   }
 }
 </style>

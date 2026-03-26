@@ -1,5 +1,10 @@
 <template>
   <div class="donate">
+    <div class="back-nav">
+      <router-link to="/" class="back-link">
+        <span class="back-arrow">←</span> 返回首页
+      </router-link>
+    </div>
     <h2>📚 捐赠书籍</h2>
     
     <!-- 步骤条 -->
@@ -579,73 +584,137 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* ==================== 清新风格样式 ==================== */
 .donate {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 30px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #faf8f4;
   min-height: calc(100vh - 60px);
+  padding: 32px 20px;
+}
+
+/* 返回按钮样式 */
+.back-nav {
+  max-width: 800px;
+  margin: 0 auto 20px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8b9a8e;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #8fc1b0;
+}
+
+.back-arrow {
+  font-size: 16px;
 }
 
 h2 {
   text-align: center;
   margin-bottom: 30px;
-  color: white;
-  font-size: 2.2rem;
-  font-weight: 600;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  color: #2c5a4f;
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: 1px;
 }
 
 .step-content {
-  margin-top: 20px;
+  max-width: 800px;
+  margin: 20px auto 0;
 }
 
 /* 卡片样式 */
-.form-card, .qr-card, .success-card {
-  border-radius: 20px !important;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
-  border: none !important;
+:deep(.el-card) {
+  border-radius: 28px !important;
+  border: 1px solid #efebe6 !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02) !important;
   overflow: hidden;
+}
+
+:deep(.el-card__header) {
+  border-bottom: 1px solid #efebe6;
+  padding: 16px 24px;
+  background: white;
 }
 
 .card-header {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 15px 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
 }
 
 .card-header h3 {
   margin: 0;
-  font-size: 1.4rem;
-  color: white;
+  font-size: 18px;
   font-weight: 500;
+  color: #2c5a4f;
+}
+
+:deep(.el-card__body) {
+  padding: 28px;
+}
+
+/* 表单样式 */
+:deep(.el-form-item__label) {
+  color: #5a6e5c;
+  font-weight: 500;
+}
+
+:deep(.el-input__wrapper) {
+  border-radius: 12px;
+  border: 1px solid #e2e6e0;
+  box-shadow: none;
+}
+
+:deep(.el-input__wrapper:hover) {
+  border-color: #8fc1b0;
+}
+
+:deep(.el-input__wrapper.is-focus) {
+  border-color: #8fc1b0;
+  box-shadow: 0 0 0 2px rgba(143, 193, 176, 0.1);
+}
+
+:deep(.el-textarea__inner) {
+  border-radius: 12px;
+  border: 1px solid #e2e6e0;
+}
+
+:deep(.el-textarea__inner:focus) {
+  border-color: #8fc1b0;
+}
+
+:deep(.el-select .el-input__wrapper) {
+  border-radius: 12px;
 }
 
 /* 封面上传区域 */
 .cover-uploader {
-  border: 2px dashed #4CAF50;
-  border-radius: 12px;
+  border: 2px dashed #e2e6e0;
+  border-radius: 16px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
   width: 178px;
   height: 178px;
-  transition: all 0.3s ease;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  transition: all 0.2s;
+  background: #faf8f4;
 }
 
 .cover-uploader:hover {
-  border-color: #45a049;
-  transform: scale(1.02);
-  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+  border-color: #8fc1b0;
+  background: #f5f0e8;
 }
 
 .cover-uploader .uploader-icon {
   font-size: 32px;
-  color: #4CAF50;
+  color: #b8c4b0;
   width: 178px;
   height: 178px;
   line-height: 178px;
@@ -661,26 +730,68 @@ h2 {
 
 /* 输入提示 */
 .input-hint {
-  margin-top: 5px;
-  font-size: 0.85rem;
+  margin-top: 6px;
+  font-size: 12px;
 }
 
 .hint-error {
-  color: #f44336;
+  color: #e8a4a4;
+}
+
+/* 按钮 */
+:deep(.el-button--primary) {
+  background: #8fc1b0;
+  border-color: #8fc1b0;
+  border-radius: 40px;
+  padding: 10px 24px;
+}
+
+:deep(.el-button--primary:hover) {
+  background: #7aa992;
+  border-color: #7aa992;
+}
+
+:deep(.el-button--default) {
+  border-radius: 40px;
+  border-color: #e2e6e0;
+  color: #8b9a8e;
+}
+
+:deep(.el-button--default:hover) {
+  border-color: #8fc1b0;
+  color: #8fc1b0;
+}
+
+:deep(.el-button--success) {
+  background: #e8f0ec;
+  border-color: #e8f0ec;
+  color: #8fc1b0;
+  border-radius: 40px;
+}
+
+:deep(.el-button--success:hover) {
+  background: #dde9e2;
+}
+
+.submit-btn {
+  background: #8fc1b0;
+  border: none;
+  padding: 12px 30px;
+  font-size: 15px;
 }
 
 /* 二维码信息区域 */
 .qr-info {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  background: #faf8f4;
   padding: 20px;
-  border-radius: 16px;
+  border-radius: 20px;
   margin: 20px 0;
 }
 
 .info-row {
   display: flex;
-  padding: 10px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 10px 0;
+  border-bottom: 1px solid #efebe6;
 }
 
 .info-row:last-child {
@@ -689,43 +800,42 @@ h2 {
 
 .info-label {
   width: 100px;
-  font-weight: 600;
-  color: #4CAF50;
+  font-weight: 500;
+  color: #8b9a8e;
 }
 
 .info-value {
   flex: 1;
-  color: #333;
+  color: #5a6e5c;
 }
 
 .info-value.highlight {
-  color: #4CAF50;
-  font-weight: 600;
-  font-size: 1.1rem;
+  color: #8fc1b0;
+  font-weight: 500;
 }
 
 /* 二维码区域 */
 .qr-code {
   text-align: center;
   margin: 20px 0;
-  padding: 25px;
+  padding: 24px;
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  border: 1px solid #efebe6;
 }
 
 .qr-code canvas {
-  border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 /* 提示区域 */
 .qr-tips {
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdef5 100%);
-  padding: 15px 20px;
-  border-radius: 12px;
+  background: #e8f0ec;
+  padding: 16px 20px;
+  border-radius: 16px;
   margin: 20px 0;
-  color: #1976D2;
+  color: #5a6e5c;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -736,10 +846,12 @@ h2 {
   display: flex;
   align-items: center;
   gap: 10px;
+  font-size: 13px;
 }
 
 .qr-tips .el-icon {
-  font-size: 18px;
+  font-size: 16px;
+  color: #8fc1b0;
 }
 
 /* 按钮区域 */
@@ -750,23 +862,10 @@ h2 {
   margin-top: 20px;
 }
 
-.submit-btn {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
-  border: none;
-  padding: 12px 30px;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-}
-
-.submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(76, 175, 80, 0.4);
-}
-
 /* 成功页面 */
 .success-content {
   text-align: center;
-  padding: 40px 20px;
+  padding: 32px 20px;
 }
 
 .success-icon {
@@ -774,8 +873,8 @@ h2 {
 }
 
 .success-icon .el-icon {
-  font-size: 80px;
-  color: #4CAF50;
+  font-size: 72px;
+  color: #8fc1b0;
   animation: scaleIn 0.5s ease;
 }
 
@@ -791,48 +890,55 @@ h2 {
 }
 
 .success-content h2 {
-  color: #333;
+  color: #2c5a4f;
   margin: 20px 0 10px;
-  font-size: 2rem;
+  font-size: 24px;
 }
 
 .success-content p {
-  color: #666;
-  margin-bottom: 20px;
-  font-size: 1.1rem;
+  color: #6c826e;
+  margin-bottom: 24px;
+  font-size: 15px;
 }
 
 .book-id {
-  color: #4CAF50;
-  font-weight: 600;
-  font-size: 1.2rem;
+  color: #8fc1b0;
+  font-weight: 500;
+  font-size: 16px;
 }
 
 .success-actions {
   display: flex;
   gap: 15px;
   justify-content: center;
-  margin-top: 30px;
+  margin-top: 20px;
   flex-wrap: wrap;
 }
 
-/* 响应式设计 */
+/* 响应式 */
 @media (max-width: 768px) {
   .donate {
-    padding: 20px 15px;
+    padding: 20px 16px;
   }
   
   h2 {
-    font-size: 1.8rem;
+    font-size: 24px;
+  }
+  
+  :deep(.el-card__body) {
+    padding: 20px;
   }
   
   .qr-actions {
     flex-direction: column;
   }
   
+  .qr-actions .el-button {
+    width: 100%;
+  }
+  
   .success-actions {
     flex-direction: column;
-    align-items: center;
   }
   
   .success-actions .el-button {
@@ -841,7 +947,7 @@ h2 {
   
   .info-row {
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
   }
   
   .info-label {
