@@ -12,9 +12,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/books")
 @CrossOrigin(origins = "*")
-
+@GetMapping("/test")
 public class BookController {
-    @GetMapping("/test")
+    
     public Map<String, String> test() {
     Map<String, String> result = new HashMap<>();
     result.put("status", "ok");
