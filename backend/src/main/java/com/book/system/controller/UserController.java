@@ -228,49 +228,36 @@ public class UserController {
                 result.put("message", "图片大小不能超过2MB");
                 return result;
             }
-             // 将图片转为 Base64
-            byte[] bytes = file.getBytes();
-            String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
-            String avatarBase64 = "data:" + contentType + ";base64," + base64;
+            String uploadDir = new File("uploads/avatars").getAbsolutePath() + File.separator;
+            System.out.println("上传目录: " + uploadDir);
 
-            // 保存 Base64 到数据库
-            userMapper.updateAvatar(userId, avatarBase64);
+            // 创建上传目录（如果不存在）
+            File dir = new File(uploadDir);
+            if (!dir.exists()) {
+                boolean created = dir.mkdirs();
+                System.out.println("创建目录结果: " + created);
+            }
+
+            // 生成唯一文件名
+            String originalFilename = file.getOriginalFilename();
+            String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String fileName = userId + "_" + UUID.randomUUID().toString() + fileExtension;
+            String filePath = uploadDir + fileName;
+
+            // 保存文件
+            File dest = new File(filePath);
+            file.transferTo(dest);
+            System.out.println("文件保存成功: " + filePath);
+
+            // 生成访问URL
+            String avatarUrl = "https://books-drifting-production.up.railway.app/uploads/avatars/" + fileName;
+
+            // 更新数据库中的用户头像
+            userMapper.updateAvatar(userId, avatarUrl);
 
             result.put("success", true);
             result.put("message", "头像上传成功");
-            result.put("avatarUrl", avatarBase64);
-
-
-            // String uploadDir = new File("uploads/avatars").getAbsolutePath() + File.separator;
-            // System.out.println("上传目录: " + uploadDir);
-
-            // // 创建上传目录（如果不存在）
-            // File dir = new File(uploadDir);
-            // if (!dir.exists()) {
-            //     boolean created = dir.mkdirs();
-            //     System.out.println("创建目录结果: " + created);
-            // }
-
-            // 生成唯一文件名
-            // String originalFilename = file.getOriginalFilename();
-            // String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            // String fileName = userId + "_" + UUID.randomUUID().toString() + fileExtension;
-            // String filePath = uploadDir + fileName;
-
-            // 保存文件
-            // File dest = new File(filePath);
-            // file.transferTo(dest);
-            // System.out.println("文件保存成功: " + filePath);
-
-            // 生成访问URL
-            // String avatarUrl = "https://books-drifting-production.up.railway.app/uploads/avatars/" + fileName;
-
-            // 更新数据库中的用户头像
-            // userMapper.updateAvatar(userId, avatarUrl);
-
-            // result.put("success", true);
-            // result.put("message", "头像上传成功");
-            // result.put("avatarUrl", avatarUrl);
+            result.put("avatarUrl", avatarUrl);
 
         } catch (Exception e) {
             e.printStackTrace();
