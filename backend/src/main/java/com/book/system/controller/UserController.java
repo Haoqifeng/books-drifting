@@ -228,29 +228,39 @@ public class UserController {
                 result.put("message", "图片大小不能超过2MB");
                 return result;
             }
-            String uploadDir = new File("uploads/avatars").getAbsolutePath() + File.separator;
-            System.out.println("上传目录: " + uploadDir);
+            //String uploadDir = new File("uploads/avatars").getAbsolutePath() + File.separator;
+            //System.out.println("上传目录: " + uploadDir);
 
             // 创建上传目录（如果不存在）
-            File dir = new File(uploadDir);
-            if (!dir.exists()) {
-                boolean created = dir.mkdirs();
-                System.out.println("创建目录结果: " + created);
-            }
+            // File dir = new File(uploadDir);
+            // if (!dir.exists()) {
+            //     boolean created = dir.mkdirs();
+            //     System.out.println("创建目录结果: " + created);
+            // }
 
             // 生成唯一文件名
             String originalFilename = file.getOriginalFilename();
             String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String fileName = userId + "_" + UUID.randomUUID().toString() + fileExtension;
-            String filePath = uploadDir + fileName;
+            //String filePath = uploadDir + fileName;
+
+            // 上传到腾讯云 COS
+            String avatarUrl = COSUtil.uploadFile(file, fileName);
+        
+            if (avatarUrl == null) {
+            result.put("success", false);
+            result.put("message", "上传到云存储失败，请检查配置");
+            return result;
+            }
+
 
             // 保存文件
-            File dest = new File(filePath);
-            file.transferTo(dest);
-            System.out.println("文件保存成功: " + filePath);
+            // File dest = new File(filePath);
+            // file.transferTo(dest);
+            // System.out.println("文件保存成功: " + filePath);
 
             // 生成访问URL
-            String avatarUrl = "https://books-drifting-production.up.railway.app/uploads/avatars/" + fileName;
+            //String avatarUrl = "https://books-drifting-production.up.railway.app/uploads/avatars/" + fileName;
 
             // 更新数据库中的用户头像
             userMapper.updateAvatar(userId, avatarUrl);
