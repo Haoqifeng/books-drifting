@@ -93,13 +93,13 @@ export default {
         
         if (response.data.success) {
           const userInfo = {
-            id: response.userId,
-            studentId: response.studentId,
-            name: response.username,
-            phone: response.phone || '',
-            email: response.email || '',
-            role: response.role || 'user',
-            borrowedCount: response.borrowedCount || 0
+            id: response.data.userId,
+            studentId: response.data.studentId,
+            name: response.data.username,
+            phone: response.data.phone || '',
+            email: response.data.email || '',
+            role: response.data.role || 'user',
+            borrowedCount: response.data.borrowedCount || 0
           };
           localStorage.setItem('userInfo', JSON.stringify(userInfo));
           localStorage.setItem('token', response.token || 'mock-token');
