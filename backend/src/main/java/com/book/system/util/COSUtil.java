@@ -22,6 +22,11 @@ public class COSUtil {
     private static COSClient cosClient;
     
     static {
+        System.out.println("=== COS 环境变量调试 ===");
+    System.out.println("COS_SECRET_ID: " + (System.getenv("COS_SECRET_ID") != null ? "已设置 (长度: " + System.getenv("COS_SECRET_ID").length() + ")" : "未设置"));
+    System.out.println("COS_SECRET_KEY: " + (System.getenv("COS_SECRET_KEY") != null ? "已设置 (长度: " + System.getenv("COS_SECRET_KEY").length() + ")" : "未设置"));
+    System.out.println("COS_BUCKET_NAME: " + (System.getenv("COS_BUCKET_NAME") != null ? System.getenv("COS_BUCKET_NAME") : "未设置"));
+    System.out.println("COS_REGION: " + (System.getenv("COS_REGION") != null ? System.getenv("COS_REGION") : "未设置"));
         if (SECRET_ID != null && SECRET_KEY != null && BUCKET_NAME != null && REGION != null) {
             try {
                 BasicCOSCredentials cred = new BasicCOSCredentials(SECRET_ID, SECRET_KEY);
