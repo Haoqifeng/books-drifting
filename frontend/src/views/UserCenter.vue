@@ -707,7 +707,7 @@ export default {
       try {
         const date = new Date(dateStr);
         // 转换为本地日期格式 YYYY/MM/DD
-        const year = date.getFullYear();
+        const year = date.getUTCFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}/${month}/${day}`;
@@ -841,6 +841,7 @@ export default {
     },
     
     showMedalDetail(medal) {
+      console.log('点击的勋章:', medal);  
       this.selectedMedal = medal;
       this.showModal = true;
       document.body.style.overflow = 'hidden';
