@@ -665,7 +665,7 @@ export default {
     async fetchBorrowedBooks() {
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-        const userId = userInfo.id;
+        const userId = this.getCurrentUserId();
         const token = localStorage.getItem('token');
         
         console.log('正在获取借阅书籍，用户ID:', userId);
