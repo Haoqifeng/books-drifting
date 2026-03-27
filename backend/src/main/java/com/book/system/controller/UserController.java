@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.UUID;  // 【新增】用于生成唯一文件名
 import java.util.Map;
 import java.util.HashMap;
+import com.book.system.util.COSUtil;
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "*")
