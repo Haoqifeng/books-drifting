@@ -672,8 +672,8 @@ const verifyBook = async (bookTitle, bookId) => {
         id: matchedRecord.bookId,
         title: matchedRecord.bookTitle,
         author: matchedRecord.bookAuthor,
-        isbn: matchedRecord.isbn,
-        coverUrl: matchedRecord.coverUrl
+        isbn: matchedRecord.bookIsbn,
+        coverUrl: matchedRecord.bookCover
       }
       
       // 构建借阅信息
