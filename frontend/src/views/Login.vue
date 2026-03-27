@@ -91,7 +91,7 @@ export default {
           password: this.form.password
         });
         
-        if (response.success) {
+        if (response.data.success) {
           const userInfo = {
             id: response.userId,
             studentId: response.studentId,
