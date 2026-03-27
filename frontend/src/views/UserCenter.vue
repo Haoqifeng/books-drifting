@@ -708,8 +708,8 @@ export default {
         const date = new Date(dateStr);
         // 转换为本地日期格式 YYYY/MM/DD
         const year = date.getUTCFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(date.getUTCDate()).padStart(2, '0');
         return `${year}/${month}/${day}`;
       } catch (e) {
         return dateStr;
