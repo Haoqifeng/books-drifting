@@ -250,7 +250,7 @@ public class UserController {
             System.out.println("文件保存成功: " + filePath);
 
             // 生成访问URL
-            String avatarUrl = "http://localhost:10011/uploads/avatars/" + fileName;
+            String avatarUrl = "http://books-drifting-production.up.railway.app/uploads/avatars/" + fileName;
 
             // 更新数据库中的用户头像
             userMapper.updateAvatar(userId, avatarUrl);
