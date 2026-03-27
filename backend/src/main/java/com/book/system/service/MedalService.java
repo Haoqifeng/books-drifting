@@ -176,6 +176,7 @@ public class MedalService {
 
                 // 更新用户勋章记录
                 medalMapper.updateProgress(userId, medalId, currentCount);
+
                 System.out.println("更新勋章: " + medal.getName() + ", 当前进度: " + currentCount + "/" + medal.getRequired());
             }
         }

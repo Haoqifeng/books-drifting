@@ -644,8 +644,16 @@ const verifyBook = async (bookTitle, bookId) => {
         matchedRecord = borrowRecords.find(record => {
           const recordBookId = String(record.bookId || '')
           const searchId = String(bookId)
+          
           return recordBookId === searchId || 
                  (searchId.startsWith('BOOK') && recordBookId === searchId.replace('BOOK', ''))
+        })
+      }
+
+      if (!matchedRecord && bookId && !isNaN(Number(bookId))) {
+        matchedRecord = borrowRecords.find(record => {
+          const recordId = String(record.id || record.bookId || '')
+          return recordId === bookId || recordId === `BOOK${bookId}`
         })
       }
       
