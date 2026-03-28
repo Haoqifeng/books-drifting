@@ -190,7 +190,7 @@
             <el-alert
               :title="`书籍已超期 ${overdueDays} 天`"
               type="error"
-              :description="`请尽快归还，超期每天将扣除1积分`"
+              :description="`请尽快归还，你已逾期`"
               show-icon
               :closable="false"
               effect="dark"
@@ -1205,7 +1205,7 @@ h2 {
 }
 
 .overdue {
-  color: #e8a4a4;
+  color: #c71616;
   font-weight: 500;
 }
 
