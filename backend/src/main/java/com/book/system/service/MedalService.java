@@ -174,10 +174,21 @@ public class MedalService {
                 // 确保用户有勋章记录
                 ensureUserMedalExists(userId, medalId);
 
-                // 更新用户勋章记录
-                medalMapper.updateProgress(userId, medalId, currentCount);
+                // // 更新用户勋章记录
+                // medalMapper.updateProgress(userId, medalId, currentCount);
 
-                System.out.println("更新勋章: " + medal.getName() + ", 当前进度: " + currentCount + "/" + medal.getRequired());
+                // System.out.println("更新勋章: " + medal.getName() + ", 当前进度: " + currentCount + "/" + medal.getRequired());
+                // 更新用户勋章记录
+                int affected = medalMapper.updateProgress(userId, medalId, currentCount);
+
+                // 如果当前进度达到要求，确保解锁时间已设置
+                if (currentCount >= medal.getRequired()) {
+                // 检查是否需要单独设置解锁时间
+                UserMedal um = medalMapper.findUserMedal(userId, medalId);
+                if (um != null && um.getUnlocked() && um.getUnlockedAt() == null) {
+               medalMapper.setUnlockedAt(userId, medalId);
+              }
+            }
             }
         }
     }

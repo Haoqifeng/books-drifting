@@ -47,6 +47,8 @@ public interface MedalMapper {
             "updated_at = NOW() " +
             "WHERE user_id = #{userId} AND medal_id = #{medalId}")
     int updateProgress(@Param("userId") Integer userId, @Param("medalId") Integer medalId, @Param("current") int current);
+    @Update("UPDATE user_medal SET unlocked_at = NOW() WHERE user_id = #{userId} AND medal_id = #{medalId}")
+int updateUnlockedAt(@Param("userId") Integer userId, @Param("medalId") Integer medalId);
 
     // 获取勋章类型对应的ID
     @Select("SELECT id FROM medal WHERE type = #{type}")
