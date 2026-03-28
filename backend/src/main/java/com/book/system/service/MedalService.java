@@ -186,7 +186,7 @@ public class MedalService {
                 // 检查是否需要单独设置解锁时间
                 UserMedal um = medalMapper.findUserMedal(userId, medalId);
                 if (um != null && um.getUnlocked() && um.getUnlockedAt() == null) {
-               medalMapper.setUnlockedAt(userId, medalId);
+               medalMapper.updateUnlockedAt(userId, medalId);
               }
             }
             }
