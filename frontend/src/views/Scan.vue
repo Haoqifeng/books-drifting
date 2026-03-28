@@ -240,7 +240,7 @@
           <div class="success-info">
             <p>归还时间：{{ returnTime }}</p>
             <p v-if="isOverdue" class="overdue-text">
-              书籍超期 {{ overdueDays }} 天，已扣除 {{ overdueDays }} 积分
+              书籍超期 {{ overdueDays }} 天，如有下次，将承担相应惩罚！！
             </p>
           </div>
           
