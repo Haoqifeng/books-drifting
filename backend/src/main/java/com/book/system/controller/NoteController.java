@@ -108,17 +108,20 @@ public class NoteController {
         try {
             Integer noteId = Integer.parseInt(params.get("noteId").toString());
             Integer userId = Integer.parseInt(params.get("userId").toString());
+            Map<String, Object> likeResult = noteService.toggleLike(noteId, userId);
+            return likeResult;
 
-            boolean liked = noteService.toggleLike(noteId, userId);
+            //boolean liked = noteService.toggleLike(noteId, userId);
 
-            result.put("success", true);
-            result.put("liked", liked);
+            //result.put("success", true);
+            //result.put("liked", liked);
         } catch (Exception e) {
             e.printStackTrace();
             result.put("success", false);
             result.put("message", e.getMessage());
+            return result;
         }
 
-        return result;
+        
     }
 }

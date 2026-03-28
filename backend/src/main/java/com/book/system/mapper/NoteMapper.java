@@ -52,7 +52,11 @@ public interface NoteMapper {
     // 取消点赞
     @Delete("DELETE FROM note_like WHERE note_id = #{noteId} AND user_id = #{userId}")
     int removeLike(@Param("noteId") Integer noteId, @Param("userId") Integer userId);
-
+    
+    // 获取笔记点赞数
+    @Select("SELECT likes FROM note WHERE id = #{noteId}")
+    int getLikesById(@Param("noteId") Integer noteId);
+    
     // 更新笔记点赞数
     @Update("UPDATE note SET likes = likes + #{delta} WHERE id = #{noteId}")
     int updateLikes(@Param("noteId") Integer noteId, @Param("delta") int delta);

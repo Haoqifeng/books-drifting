@@ -510,11 +510,14 @@ export default {
         })
         if (response.data.success) {
           note.liked = response.data.liked
-          note.likes += note.liked ? 1 : -1
+          note.likes = response.data.likes
+          //note.likes += note.liked ? 1 : -1
         }
-      } catch {
-        note.liked = !note.liked
-        note.likes += note.liked ? 1 : -1
+      } catch (error){
+        // note.liked = !note.liked
+        // note.likes += note.liked ? 1 : -1
+        console.error('点赞失败:', error)
+
       }
     },
     

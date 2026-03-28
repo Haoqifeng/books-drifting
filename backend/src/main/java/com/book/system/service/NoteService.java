@@ -5,7 +5,10 @@ import com.book.system.mapper.NoteMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class NoteService {
@@ -93,18 +96,41 @@ public class NoteService {
     }
 
     // 点赞/取消点赞
-    @Transactional
-    public boolean toggleLike(Integer noteId, Integer userId) {
-        boolean liked = noteMapper.checkLike(noteId, userId) > 0;
+    // public boolean toggleLike(Integer noteId, Integer userId) {
+    //     boolean liked = noteMapper.checkLike(noteId, userId) > 0;
 
-        if (liked) {
-            noteMapper.removeLike(noteId, userId);
-            noteMapper.updateLikes(noteId, -1);
-            return false;
-        } else {
-            noteMapper.addLike(noteId, userId);
-            noteMapper.updateLikes(noteId, 1);
-            return true;
-        }
+    //     if (liked) {
+    //         noteMapper.removeLike(noteId, userId);
+    //         noteMapper.updateLikes(noteId, -1);
+    //         return false;
+    //     } else {
+    //         noteMapper.addLike(noteId, userId);
+    //         noteMapper.updateLikes(noteId, 1);
+    //         return true;
+    //     }
+    // }
+    // 点赞/取消点赞 - 返回 {liked, likes}
+@Transactional
+public Map<String, Object> toggleLike(Integer noteId, Integer userId) {
+    Map<String, Object> result = new HashMap<>();
+    
+    boolean liked = noteMapper.checkLike(noteId, userId) > 0;
+    
+    if (liked) {
+        noteMapper.removeLike(noteId, userId);
+        noteMapper.updateLikes(noteId, -1);
+        result.put("liked", false);
+    } else {
+        noteMapper.addLike(noteId, userId);
+        noteMapper.updateLikes(noteId, 1);
+        result.put("liked", true);
+    }
+    
+    // 获取最新的点赞数
+    int newLikes = noteMapper.getLikesById(noteId);
+    result.put("likes", newLikes);
+    result.put("success", true);
+    
+    return result;
     }
 }
