@@ -1222,11 +1222,22 @@ h2 {
 }
 
 :deep(.el-alert--success) {
-  background: #e8f0ec;
+  background: #e1e9e5;
 }
 
 :deep(.el-alert--error) {
-  background: #fef0ec;
+  background: #df3b0d;
+}
+:deep(.el-alert--error .el-alert__title) {
+  color: #000000 !important;
+  font-weight: 500;
+}
+:deep(.el-alert--error .el-alert__description) {
+  color: #000000 !important;
+}
+
+:deep(.el-alert--error .el-alert__close-btn) {
+  color: #000000 !important;
 }
 
 /* 归还确认 */
